@@ -2,3 +2,11 @@
 name = "bwadvent"
 version = "0.1.0"
 authors = ["Dabo Ross <daboross@daboross.net>"]
+
+[lib]
+name = "bwadvent"
+path = "src/rust/lib.rs"
+
+[[bin]]
+name = "b-w-adventures"
+path = "src/rust/main.rs"
