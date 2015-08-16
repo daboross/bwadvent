@@ -10,10 +10,12 @@ use map::Map;
 
 use self::SingleInputState::*;
 
-pub const PLAYER_WIDTH: u32 = 32;
-pub const PLAYER_HEIGHT: u32 = 20;
-pub const PLAYER_WIDTH_FLOAT: f64 = PLAYER_WIDTH as f64;
-pub const PLAYER_HEIGHT_FLOAT: f64 = PLAYER_HEIGHT as f64;
+pub const PLAYER_IMAGE_WIDTH: u32 = 32;
+pub const PLAYER_IMAGE_HEIGHT: u32 = 20;
+pub const PLAYER_IMAGE_Y_OFFSET: f64 = 0.0;
+pub const PLAYER_IMAGE_X_OFFSET: f64 = -11.0;
+pub const PLAYER_COLLISION_WIDTH: u32 = 10;
+pub const PLAYER_COLLISION_HEIGHT: u32 = 20;
 
 #[derive(Copy, Clone)]
 pub enum SingleInputState {
@@ -153,7 +155,8 @@ impl Player {
         new_y += self.y_velocity * time;
         self.y_velocity = (self.y_velocity + 500.0) * 0.2f64.powf(time) - 500.0;
 
-        let collisions = self.collides(new_x, new_y, map.blocks());
+        let collisions = self.collides(new_x, new_y,
+            map.blocks().iter().chain(map.boundary_collision_lines().iter()));
 
         self.last_grounded = collisions.south.is_some();
 
@@ -207,7 +210,7 @@ impl Player {
                     &cache.standing_right
                 },
                 MovementState::MovingLeft => {
-                    &cache.run_left[self.absolute_x.ceil() as usize / 4 % 6]
+                    &cache.run_left[5 - self.absolute_x.ceil() as usize / 4 % 6]
                 },
                 MovementState::MovingRight => {
                     &cache.run_right[self.absolute_x.ceil() as usize / 4 % 6]
@@ -236,10 +239,10 @@ impl collisions::HasBounds for Player {
     }
 
     fn len_x(&self) -> f64 {
-        PLAYER_WIDTH_FLOAT
+        PLAYER_COLLISION_WIDTH as f64
     }
 
     fn len_y(&self) -> f64 {
-        PLAYER_HEIGHT_FLOAT
+        PLAYER_COLLISION_HEIGHT as f64
     }
 }

@@ -32,6 +32,10 @@ pub struct Level {
     pub initial_x: f64,
     pub initial_y: f64,
     pub items: Vec<LevelItem>,
+    pub east_boundary: f64,
+    pub south_boundary: f64,
+    pub north_boundary: f64,
+    pub west_boundary: f64,
 }
 
 named! {
@@ -49,6 +53,32 @@ named! {
         ),
         |(x, y)| {
             Ok::<_, ()>((try!(parse_f64(x)), try!(parse_f64(y))))
+        }
+    )
+}
+
+named! {
+    level_bounds<(f64, f64, f64, f64)>,
+
+    map_res! (
+        chain! (
+            tag!("bounds")~
+            opt!(call!(nom::space))~
+            tag!(":")~
+            opt!(call!(nom::space))~
+            west: take_until_and_consume!(",")~
+            south: take_until_and_consume!(",")~
+            east: take_until_and_consume!(",")~
+            north: take_until_and_consume!("\n"),
+            || { (west, south, east, north) }
+        ),
+        |(west, south, east, north)| {
+            Ok::<_, ()>((
+                try!(parse_f64(west)),
+                try!(parse_f64(south)),
+                try!(parse_f64(east)),
+                try!(parse_f64(north)),
+            ))
         }
     )
 }
@@ -133,12 +163,18 @@ named! {
     chain! (
         initial_coords: call!(level_initial_coords)~
         opt!(call!(nom::multispace))~
+        bounds: call!(level_bounds)~
+        opt!(call!(nom::multispace))~
         items: terminated!(many0!(call!(level_item)), call!(level_end)),
         || {
             Level {
                 initial_x: initial_coords.0,
                 initial_y: initial_coords.1,
                 items: items,
+                west_boundary: bounds.0,
+                south_boundary: bounds.1,
+                east_boundary: bounds.2,
+                north_boundary: bounds.3,
             }
         }
     )
@@ -165,6 +201,8 @@ pub fn load_level<T: ?Sized>(input: &T) -> Option<Level> where T: AsRef<[u8]> {
 #[allow(dead_code)]
 pub fn save_level<T: ?Sized>(level: &Level, out: &mut T) -> io::Result<()> where T: Write {
     try!(write!(out, "start: {:.2},{:.2}\n\n", level.initial_x, level.initial_y));
+    try!(write!(out, "bounds: {:.2},{:.2},{:.2},{:.2}\n\n",
+        level.east_boundary, level.south_boundary, level.west_boundary, level.north_boundary));
     for item in &level.items {
         match item {
             &LevelItem::Box { x, y, width, height } => {

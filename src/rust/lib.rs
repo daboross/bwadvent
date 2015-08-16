@@ -16,13 +16,18 @@ use std::fs;
 
 use piston::input::{RenderArgs, Event, RenderEvent};
 use piston::event_loop::Events;
-use graphics::Transformed;
-use graphics::ImageSize;
+use graphics::{Transformed, ImageSize};
 
 use opengl_graphics::Texture as OpenGlTexture;
 use piston::window::WindowSettings;
 
-use player::{PLAYER_WIDTH, PLAYER_HEIGHT, Player};
+use player::{
+    Player,
+    PLAYER_IMAGE_WIDTH,
+    PLAYER_IMAGE_HEIGHT,
+    PLAYER_IMAGE_X_OFFSET,
+    PLAYER_IMAGE_Y_OFFSET,
+};
 use map::Map;
 
 pub fn run() {
@@ -64,6 +69,7 @@ impl Application {
         let screen_width = event.width as f64;
         let screen_height = event.height as f64;
 
+        // TODO: see if the [1; 2] instead of [0; 2] wants to be included in any example projects
         let viewport = graphics::Viewport {
             rect: [0, 0, event.width as i32, event.height as i32],
             draw_size: [1; 2],
@@ -72,17 +78,26 @@ impl Application {
 
         let cache = &self.cache;
         let player = &self.player;
+        let map = &self.map;
         self.graphics.draw(viewport, |context, graphics| {
             graphics::clear([1.0, 1.0, 1.0, 1.0], graphics);
             graphics::image(
                 player.get_current_image(&cache.player),
                 context.trans(
-                    screen_width / 2.0 + player.absolute_x.ceil(),
+                    screen_width / 2.0 + player.absolute_x.ceil() + PLAYER_IMAGE_X_OFFSET as f64,
                     screen_height / 2.0 - cache.player.get_height() as f64
-                        - player.absolute_y.ceil()
+                        - player.absolute_y.ceil() - PLAYER_IMAGE_Y_OFFSET as f64
                 ).transform,
                 graphics,
             );
+            for block in map.blocks().iter().chain(map.boundary_collision_lines().iter()) {
+                graphics::Rectangle::new(graphics::color::BLACK).draw(
+                    block,
+                    &context.draw_state,
+                    context.trans(screen_width / 2.0, screen_height / 2.0).flip_v().transform,
+                    graphics,
+                );
+            }
         })
     }
 
@@ -107,20 +122,20 @@ impl PlayerGraphics {
         let run_right = load_texture_frames("src/png/unarmed/runright.png", 6);
         let standing_left = load_texture("src/png/unarmed/readyleft.png");
         let standing_right = load_texture("src/png/unarmed/readyright.png");
-        assert_eq!(PLAYER_WIDTH, run_left[0].get_width());
-        assert_eq!(PLAYER_WIDTH, run_right[0].get_width());
-        assert_eq!(PLAYER_WIDTH, standing_left.get_width());
-        assert_eq!(PLAYER_WIDTH, standing_right.get_width());
-        assert_eq!(PLAYER_HEIGHT, run_left[0].get_height());
-        assert_eq!(PLAYER_HEIGHT, run_right[0].get_height());
-        assert_eq!(PLAYER_HEIGHT, standing_left.get_height());
-        assert_eq!(PLAYER_HEIGHT, standing_right.get_height());
+        assert_eq!(PLAYER_IMAGE_WIDTH, run_left[0].get_width());
+        assert_eq!(PLAYER_IMAGE_WIDTH, run_right[0].get_width());
+        assert_eq!(PLAYER_IMAGE_WIDTH, standing_left.get_width());
+        assert_eq!(PLAYER_IMAGE_WIDTH, standing_right.get_width());
+        assert_eq!(PLAYER_IMAGE_HEIGHT, run_left[0].get_height());
+        assert_eq!(PLAYER_IMAGE_HEIGHT, run_right[0].get_height());
+        assert_eq!(PLAYER_IMAGE_HEIGHT, standing_left.get_height());
+        assert_eq!(PLAYER_IMAGE_HEIGHT, standing_right.get_height());
         PlayerGraphics {
             run_left: run_left,
             run_right: run_right,
             standing_left: standing_left,
             standing_right: standing_right,
-            dimensions: (PLAYER_WIDTH, PLAYER_HEIGHT),
+            dimensions: (PLAYER_IMAGE_WIDTH, PLAYER_IMAGE_HEIGHT),
         }
     }
 

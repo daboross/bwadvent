@@ -1,0 +1,4 @@
+- Make background around edges black instead of white
+- Add entity system, run update function on each entity in main update function
+- Add interaction between player and entities
+- Allow player to jump off of walls

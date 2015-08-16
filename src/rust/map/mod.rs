@@ -34,15 +34,35 @@ impl collisions::HasBounds for Platform {
     }
 }
 
+/// graphics::Rectangle
+impl<'a> Into<[f64; 4]> for &'a Platform {
+    fn into(self) -> [f64; 4] {
+        [self.min_x, self.min_y, self.len_x, self.len_y]
+    }
+}
+
+impl Into<[f64; 4]> for Platform {
+    fn into(self) -> [f64; 4] {
+        [self.min_x, self.min_y, self.len_x, self.len_y]
+    }
+}
+
 pub struct Map {
     blocks: Vec<Platform>,
+    boundary_collision_lines: Vec<Platform>,
     initial_x: f64,
     initial_y: f64,
+    /// [west, south, east - west, north - south]
+    boundaries: [f64; 4],
 }
 
 impl Map {
     pub fn blocks(&self) -> &[Platform] {
         &self.blocks
+    }
+
+    pub fn boundary_collision_lines(&self) -> &[Platform] {
+        &self.boundary_collision_lines
     }
 
     pub fn initial_x(&self) -> f64 {
@@ -77,12 +97,55 @@ impl From<level_serialization::Level> for Map {
             }
         }).collect();
 
+        let mut boundary_collision_lines = Vec::new();
+        // West
+        boundary_collision_lines.push(Platform {
+            min_x: level.west_boundary,
+            min_y: level.south_boundary,
+            len_x: 1.0,
+            len_y: level.north_boundary - level.south_boundary,
+            platform_type: PlatformType::Box,
+        });
+        // North
+        boundary_collision_lines.push(Platform {
+            min_x: level.west_boundary,
+            min_y: level.north_boundary,
+            len_x: level.east_boundary - level.west_boundary,
+            len_y: 1.0,
+            platform_type: PlatformType::Line,
+        });
+        // South
+        boundary_collision_lines.push(Platform {
+            min_x: level.west_boundary,
+            min_y: level.south_boundary,
+            len_x: level.east_boundary - level.west_boundary,
+            len_y: 1.0,
+            platform_type: PlatformType::Line,
+        });
+        // East
+        boundary_collision_lines.push(Platform {
+            min_x: level.east_boundary,
+            min_y: level.south_boundary,
+            len_x: 1.0,
+            len_y: level.north_boundary - level.south_boundary,
+            platform_type: PlatformType::Box,
+        });
+
+
         println!("{:#?}", blocks);
+        println!("{:#?}", boundary_collision_lines);
 
         Map {
             blocks: blocks,
+            boundary_collision_lines: boundary_collision_lines,
             initial_x: level.initial_x,
             initial_y: level.initial_y,
+            boundaries: [
+                level.west_boundary,
+                level.south_boundary,
+                level.north_boundary - level.south_boundary,
+                level.east_boundary - level.west_boundary,
+            ],
         }
     }
 }
