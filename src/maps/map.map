@@ -1,0 +1,4 @@
+start: 0,0
+
+platform.box: -100,-100,200,20
+platform.line: -100,-100,n,200

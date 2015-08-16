@@ -10,3 +10,14 @@ path = "src/rust/lib.rs"
 [[bin]]
 name = "b-w-adventures"
 path = "src/rust/main.rs"
+
+[dependencies]
+nom = "0.3"
+time = "0.1"
+piston = "0.10"
+piston2d-graphics = "0.4"
+pistoncore-glutin_window = "0.11"
+piston2d-opengl_graphics = "0.6"
+ncollide = "0.4"
+collisions = { path = "../collisions/" }
+image = { version = "0.3", default-features = false, features = ["png"] }
