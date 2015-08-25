@@ -72,6 +72,11 @@ impl Map {
     pub fn initial_y(&self) -> f64 {
         self.initial_y
     }
+
+    /// [west, south, east - west, north - south]
+    pub fn boundaries(&self) -> [f64; 4] {
+        self.boundaries
+    }
 }
 
 impl From<level_serialization::Level> for Map {
@@ -100,11 +105,11 @@ impl From<level_serialization::Level> for Map {
         let mut boundary_collision_lines = Vec::new();
         // West
         boundary_collision_lines.push(Platform {
-            min_x: level.west_boundary,
+            min_x: level.west_boundary - 1.0,
             min_y: level.south_boundary,
             len_x: 1.0,
             len_y: level.north_boundary - level.south_boundary,
-            platform_type: PlatformType::Box,
+            platform_type: PlatformType::Line,
         });
         // North
         boundary_collision_lines.push(Platform {
@@ -117,7 +122,7 @@ impl From<level_serialization::Level> for Map {
         // South
         boundary_collision_lines.push(Platform {
             min_x: level.west_boundary,
-            min_y: level.south_boundary,
+            min_y: level.south_boundary - 1.0,
             len_x: level.east_boundary - level.west_boundary,
             len_y: 1.0,
             platform_type: PlatformType::Line,
@@ -128,12 +133,11 @@ impl From<level_serialization::Level> for Map {
             min_y: level.south_boundary,
             len_x: 1.0,
             len_y: level.north_boundary - level.south_boundary,
-            platform_type: PlatformType::Box,
+            platform_type: PlatformType::Line,
         });
 
 
         println!("{:#?}", blocks);
-        println!("{:#?}", boundary_collision_lines);
 
         Map {
             blocks: blocks,

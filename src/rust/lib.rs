@@ -76,11 +76,21 @@ impl Application {
             window_size: [1; 2],
         };
 
+        let (scroll_x, scroll_y, player_x, player_y) =
+                self.player.calculate_scroll(screen_width, screen_height);
         let cache = &self.cache;
         let player = &self.player;
         let map = &self.map;
+
         self.graphics.draw(viewport, |context, graphics| {
-            graphics::clear([1.0, 1.0, 1.0, 1.0], graphics);
+            let context = context.trans(-scroll_x, scroll_y);
+            graphics::clear(graphics::color::BLACK, graphics);
+            graphics::Rectangle::new(graphics::color::WHITE).draw(
+                map.boundaries(),
+                &context.draw_state,
+                context.trans(screen_width / 2.0, screen_height / 2.0).flip_v().transform,
+                graphics,
+            );
             graphics::image(
                 player.get_current_image(&cache.player),
                 context.trans(
@@ -90,7 +100,7 @@ impl Application {
                 ).transform,
                 graphics,
             );
-            for block in map.blocks().iter().chain(map.boundary_collision_lines().iter()) {
+            for block in map.blocks() {
                 graphics::Rectangle::new(graphics::color::BLACK).draw(
                     block,
                     &context.draw_state,

@@ -227,6 +227,29 @@ impl Player {
             }
         }
     }
+
+    /// Takes screen width and height, gives (scroll_x, scroll_y, pos_x, pos_y)
+    pub fn calculate_scroll(&self, width: f64, height: f64) -> (f64, f64, f64, f64) {
+        const ALLOWANCE: f64 = 100.0;
+
+        let (pos_x, scroll_x) = if self.absolute_x > width / 2.0 - ALLOWANCE {
+            (width / 2.0 - ALLOWANCE, self.absolute_x - width / 2.0+ ALLOWANCE)
+        } else if self.absolute_x < ALLOWANCE - width / 2.0 {
+            (ALLOWANCE - width / 2.0, self.absolute_x - ALLOWANCE + width / 2.0)
+        } else {
+            (self.absolute_x, 0.0)
+        };
+
+        let (pos_y, scroll_y) = if self.absolute_y > height / 2.0 - ALLOWANCE {
+            (height / 2.0 - ALLOWANCE, self.absolute_y - height / 2.0+ ALLOWANCE)
+        } else if self.absolute_y < ALLOWANCE - height / 2.0 {
+            (ALLOWANCE - height / 2.0, self.absolute_y - ALLOWANCE + height / 2.0)
+        } else {
+            (self.absolute_y, 0.0)
+        };
+
+        (scroll_x.floor(), scroll_y.floor(), pos_x.floor(), pos_y.floor())
+    }
 }
 
 impl collisions::HasBounds for Player {

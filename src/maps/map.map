@@ -1,6 +1,7 @@
 start: 0,0
 
-bounds: -200,-200,200,200
+bounds: -200,-200,1000,1000
 
 platform.box: -100,-100,200,20
 platform.line: -100,-100,n,200
+platform.line: 120,-50,e,400
