@@ -76,8 +76,7 @@ impl Application {
             window_size: [1; 2],
         };
 
-        let (scroll_x, scroll_y, player_x, player_y) =
-                self.player.calculate_scroll(screen_width, screen_height);
+        let (scroll_x, scroll_y) = self.player.calculate_scroll(screen_width, screen_height);
         let cache = &self.cache;
         let player = &self.player;
         let map = &self.map;

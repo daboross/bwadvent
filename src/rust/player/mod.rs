@@ -119,6 +119,8 @@ impl MovementState {
 
 #[derive(Default)] // everything 0.0
 pub struct Player {
+    pub last_scroll_x: f64,
+    pub last_scroll_y: f64,
     pub absolute_x: f64,
     pub absolute_y: f64,
     pub last_movement: MovementState,
@@ -228,27 +230,33 @@ impl Player {
         }
     }
 
-    /// Takes screen width and height, gives (scroll_x, scroll_y, pos_x, pos_y)
-    pub fn calculate_scroll(&self, width: f64, height: f64) -> (f64, f64, f64, f64) {
+    /// Takes screen width and height, gives (scroll_x, scroll_y)
+    pub fn calculate_scroll(&mut self, width: f64, height: f64) -> (f64, f64) {
         const ALLOWANCE: f64 = 100.0;
 
-        let (pos_x, scroll_x) = if self.absolute_x > width / 2.0 - ALLOWANCE {
-            (width / 2.0 - ALLOWANCE, self.absolute_x - width / 2.0+ ALLOWANCE)
-        } else if self.absolute_x < ALLOWANCE - width / 2.0 {
-            (ALLOWANCE - width / 2.0, self.absolute_x - ALLOWANCE + width / 2.0)
+        let half_width = width / 2.0;
+        let half_height = height / 2.0;
+
+        let scroll_x = if self.absolute_x > self.last_scroll_x + half_width - ALLOWANCE {
+            self.absolute_x - half_width + ALLOWANCE
+        } else if self.absolute_x < self.last_scroll_x + ALLOWANCE - width / 2.0 {
+            self.absolute_x - ALLOWANCE + width / 2.0
         } else {
-            (self.absolute_x, 0.0)
+            self.last_scroll_x
         };
 
-        let (pos_y, scroll_y) = if self.absolute_y > height / 2.0 - ALLOWANCE {
-            (height / 2.0 - ALLOWANCE, self.absolute_y - height / 2.0+ ALLOWANCE)
-        } else if self.absolute_y < ALLOWANCE - height / 2.0 {
-            (ALLOWANCE - height / 2.0, self.absolute_y - ALLOWANCE + height / 2.0)
+        let scroll_y = if self.absolute_y > self.last_scroll_y + half_height - ALLOWANCE {
+            self.absolute_y - half_height + ALLOWANCE
+        } else if self.absolute_y < self.last_scroll_y + ALLOWANCE - half_height {
+            self.absolute_y - ALLOWANCE + half_height
         } else {
-            (self.absolute_y, 0.0)
+            self.last_scroll_y
         };
 
-        (scroll_x.floor(), scroll_y.floor(), pos_x.floor(), pos_y.floor())
+        self.last_scroll_x = scroll_x;
+        self.last_scroll_y = scroll_y;
+
+        (scroll_x.floor(), scroll_y.floor())
     }
 }
 
