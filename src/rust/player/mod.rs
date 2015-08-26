@@ -53,6 +53,14 @@ impl SingleInputState {
         }
     }
 
+    fn is_pressed(&mut self) -> bool {
+        if let Pressed = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     fn consume_press(&mut self) -> bool {
         if let Released = *self {
             false
@@ -117,16 +125,50 @@ impl MovementState {
     }
 }
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum EffectType {
+    Jumping,
+}
+
+pub struct Effect {
+    pub time_remaining: f64,
+    effect: EffectType,
+}
+
+impl Effect {
+    pub fn effect(&mut self, player: &mut Player, time_changed: f64) {
+        let change = if self.time_remaining < time_changed {
+            self.time_remaining
+        } else {
+            time_changed
+        };
+
+        match self.effect {
+            EffectType::Jumping => {
+                if player.grounded {
+                    self.time_remaining = 0.0;
+                    return;
+                } else {
+                    player.y_velocity += 1000.0 * change;
+                }
+            }
+        }
+        self.time_remaining -= change;
+    }
+}
+
 #[derive(Default)] // everything 0.0
 pub struct Player {
+    pub grounded: bool,
     pub last_scroll_x: f64,
     pub last_scroll_y: f64,
     pub absolute_x: f64,
     pub absolute_y: f64,
     pub last_movement: MovementState,
-    pub last_grounded: bool,
     pub y_velocity: f64,
+    pub x_velocity: f64,
     pub input: InputState,
+    pub current_effects: Option<Vec<Effect>>,
 }
 
 impl Player {
@@ -140,27 +182,58 @@ impl Player {
 
     fn update(&mut self, args: &UpdateArgs, map: &Map) {
         let time = args.dt;
-        let mut new_x = self.absolute_x;
-        let mut new_y = self.absolute_y;
+
+        // maybe some better way to avoid multiple borrows than an Option?
+        if let Some(mut effects) = self.current_effects.take() {
+            for effect in &mut effects {
+                effect.effect(self, time);
+            }
+            effects.retain(|effect| effect.time_remaining > 0.0);
+            self.current_effects = Some(effects);
+        }
         match (self.input.left.was_pressed(), self.input.right.was_pressed()) {
             (false, true) => {
-                new_x += 100.0 * time;
+                if self.grounded {
+                    self.x_velocity += 1000.0 * time;
+                } else {
+                    self.x_velocity += 500.0 * time;
+                }
                 self.last_movement = MovementState::MovingRight;
             },
             (true, false) => {
-                new_x -= 100.0 * time;
+                if self.grounded {
+                    self.x_velocity -= 1000.0 * time;
+                } else {
+                    self.x_velocity -= 500.0 * time;
+                }
                 self.last_movement = MovementState::MovingLeft;
             },
             (_, _) => self.last_movement.set_still(),
         }
-        new_y -= 200.0 * time;
-        new_y += self.y_velocity * time;
-        self.y_velocity = (self.y_velocity + 500.0) * 0.2f64.powf(time) - 500.0;
+
+        if self.grounded {
+            if self.input.left.is_pressed() || self.input.right.is_pressed() {
+                self.x_velocity *= 0.7f64.powf(time * 20.0);
+            } else {
+                self.x_velocity *= 0.2f64.powf(time * 20.0);
+            }
+        } else {
+            self.x_velocity *= 0.8f64.powf(time * 20.0);
+        }
+
+        if !self.grounded {
+            self.y_velocity -= 2000.0 * time;
+        }
+
+        self.y_velocity = self.y_velocity * 0.7f64.powf(time * 20.0);
+
+        let new_y = self.absolute_y + self.y_velocity * time;
+        let new_x = self.absolute_x + self.x_velocity * time;
 
         let collisions = self.collides(new_x, new_y,
             map.blocks().iter().chain(map.boundary_collision_lines().iter()));
 
-        self.last_grounded = collisions.south.is_some();
+        self.grounded = collisions.south.is_some();
 
         match (collisions.west, new_x <= self.absolute_x,
                 collisions.east, new_x >= self.absolute_x) {
@@ -191,8 +264,29 @@ impl Player {
             },
         }
 
-        if self.input.up.consume_press() && collisions.south.is_some() {
-            self.y_velocity += 500.0;
+        fn jump(player: &mut Player) {
+            player.y_velocity += 1000.0;
+            if let None = player.current_effects {
+                player.current_effects = Some(Vec::new());
+            }
+
+            player.current_effects.as_mut().unwrap().retain(|e| e.effect != EffectType::Jumping);
+            player.current_effects.as_mut().unwrap().push(Effect {
+                time_remaining: 10.0,
+                effect: EffectType::Jumping,
+            });
+        }
+
+        if self.input.up.consume_press() {
+            if collisions.south.is_some() {
+                jump(self);
+            } else if collisions.west.is_some() {
+                jump(self);
+                self.x_velocity += 500.0;
+            } else if collisions.east.is_some() {
+                jump(self);
+                self.x_velocity -= 500.0;
+            }
         }
     }
 
@@ -203,7 +297,7 @@ impl Player {
     }
 
     pub fn get_current_image<'a>(&self, cache: &'a PlayerGraphics) -> &'a OpenGlTexture {
-        if self.last_grounded {
+        if self.grounded {
             match self.last_movement {
                 MovementState::StillLeft => {
                     &cache.standing_left
