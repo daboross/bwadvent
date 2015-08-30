@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{RenderArgs, Event, RenderEvent};
+use piston::input::{RenderArgs, Event, RenderEvent, PressEvent, Button, Key};
 use piston::event_loop::Events;
 use graphics::{Transformed, ImageSize};
 
@@ -33,6 +33,9 @@ impl PlayScene {
         let mut session = PlayData::new(&self.map, graphics, cache);
 
         for event in window.events() {
+            if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
+                break;
+            }
             session.process(event);
         }
     }

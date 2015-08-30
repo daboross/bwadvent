@@ -37,7 +37,7 @@ pub fn run() {
 
     let window = glutin_window::GlutinWindow::new(
         WindowSettings::new("b-w-adventures", [640u32, 480u32])
-                        .exit_on_esc(true)
+                        .exit_on_esc(false)
                         .opengl(opengl_version)
     ).unwrap();
 

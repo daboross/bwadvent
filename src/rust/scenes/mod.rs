@@ -134,6 +134,10 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
         let mut selected = 0usize;
 
         for event in window.events() {
+            if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
+                break;
+            }
+
             event.render(|event| {
                 let screen_width = event.width as f64;
                 let screen_height = event.height as f64;
