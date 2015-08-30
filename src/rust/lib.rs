@@ -13,8 +13,6 @@ mod map;
 mod player;
 mod scenes;
 
-use std::path::Path;
-use std::fs;
 use std::rc::Rc;
 use std::cell::RefCell;
 
@@ -59,10 +57,10 @@ pub struct PlayerGraphics {
 
 impl PlayerGraphics {
     pub fn load() -> PlayerGraphics {
-        let run_left = load_texture_frames("src/png/unarmed/runleft.png", 6);
-        let run_right = load_texture_frames("src/png/unarmed/runright.png", 6);
-        let standing_left = load_texture("src/png/unarmed/readyleft.png");
-        let standing_right = load_texture("src/png/unarmed/readyright.png");
+        let run_left = load_texture_frames(&include_bytes!("../png/unarmed/runleft.png")[..], 6);
+        let run_right = load_texture_frames(&include_bytes!("../png/unarmed/runright.png")[..], 6);
+        let standing_left = load_texture(&include_bytes!("../png/unarmed/readyleft.png")[..]);
+        let standing_right = load_texture(&include_bytes!("../png/unarmed/readyright.png")[..]);
         assert_eq!(PLAYER_IMAGE_WIDTH, run_left[0].get_width());
         assert_eq!(PLAYER_IMAGE_WIDTH, run_right[0].get_width());
         assert_eq!(PLAYER_IMAGE_WIDTH, standing_left.get_width());
@@ -108,17 +106,22 @@ impl GraphicsCache {
     }
 }
 
-fn load_texture<T: AsRef<Path> + ?Sized>(path: &T) -> OpenGlTexture {
-    let file = fs::File::open(path.as_ref()).unwrap();
-    let dynamic_image = image::load(file, image::ImageFormat::PNG).unwrap();
-    let rgba_image = dynamic_image.to_rgba();
+// fn load_texture<T: AsRef<Path> + ?Sized>(path: &T) -> OpenGlTexture {
+//     let file = fs::File::open(path.as_ref()).unwrap();
+//     let image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
+fn load_texture(bytes: &[u8]) -> OpenGlTexture {
+    let image = image::load_from_memory_with_format(bytes.as_ref(), image::ImageFormat::PNG)
+        .unwrap().to_rgba();
 
-    opengl_graphics::Texture::from_image(&rgba_image)
+    opengl_graphics::Texture::from_image(&image)
 }
 
-fn load_texture_frames<T: AsRef<Path> + ?Sized>(path: &T, num_frames: u32) -> Vec<OpenGlTexture> {
-    let file = fs::File::open(path).unwrap();
-    let mut image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
+// fn load_texture_frames<T: AsRef<Path> + ?Sized>(path: &T, num_frames: u32) -> Vec<OpenGlTexture> {
+//     let file = fs::File::open(path).unwrap();
+//     let mut image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
+fn load_texture_frames(bytes: &[u8], num_frames: u32) -> Vec<OpenGlTexture> {
+    let mut image = image::load_from_memory_with_format(bytes.as_ref(), image::ImageFormat::PNG)
+        .unwrap().to_rgba();
     let (image_width, height) = image.dimensions();
 
     assert_eq!(image_width % num_frames, 0);
