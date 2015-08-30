@@ -6,29 +6,31 @@ extern crate image;
 extern crate time;
 #[macro_use] extern crate nom;
 extern crate collisions;
+#[macro_use] extern crate lazy_static;
 
 mod level_serialization;
 mod map;
 mod player;
+mod scenes;
 
 use std::path::Path;
 use std::fs;
+use std::rc::Rc;
+use std::cell::RefCell;
 
-use piston::input::{RenderArgs, Event, RenderEvent};
-use piston::event_loop::Events;
-use graphics::{Transformed, ImageSize};
+use graphics::ImageSize;
+use opengl_graphics::glyph_cache::GlyphCache;
 
 use opengl_graphics::Texture as OpenGlTexture;
 use piston::window::WindowSettings;
 
 use player::{
-    Player,
     PLAYER_IMAGE_WIDTH,
     PLAYER_IMAGE_HEIGHT,
-    PLAYER_IMAGE_X_OFFSET,
-    PLAYER_IMAGE_Y_OFFSET,
 };
-use map::Map;
+
+pub type Window = glutin_window::GlutinWindow;
+pub type Graphics = opengl_graphics::GlGraphics;
 
 pub fn run() {
     let opengl_version = opengl_graphics::OpenGL::V3_2;
@@ -39,81 +41,11 @@ pub fn run() {
                         .opengl(opengl_version)
     ).unwrap();
 
-    let mut app = Application::new(opengl_graphics::GlGraphics::new(opengl_version));
+    let mut graphics = opengl_graphics::GlGraphics::new(opengl_version);
+    let mut cache = GraphicsCache::load();
+    let window_rc = Rc::new(RefCell::new(window));
 
-    for e in window.events() {
-        app.process(e);
-    }
-}
-
-pub struct Application {
-    graphics: opengl_graphics::GlGraphics,
-    cache: GraphicsCache,
-    map: Map,
-    player: Player,
-}
-
-impl Application {
-    pub fn new(graphics: opengl_graphics::GlGraphics) -> Application {
-        let level = level_serialization::load_level(&include_bytes!("../maps/map.map")[..]);
-        let map = map::Map::from(level.unwrap());
-        Application {
-            graphics: graphics,
-            cache: GraphicsCache::load(),
-            player: Player::new(map.initial_x(), map.initial_y()),
-            map: map
-        }
-    }
-
-    fn render(&mut self, event: &RenderArgs) {
-        let screen_width = event.width as f64;
-        let screen_height = event.height as f64;
-
-        // TODO: see if the [1; 2] instead of [0; 2] wants to be included in any example projects
-        let viewport = graphics::Viewport {
-            rect: [0, 0, event.width as i32, event.height as i32],
-            draw_size: [1; 2],
-            window_size: [1; 2],
-        };
-
-        let (scroll_x, scroll_y) = self.player.calculate_scroll(screen_width, screen_height);
-        let cache = &self.cache;
-        let player = &self.player;
-        let map = &self.map;
-
-        self.graphics.draw(viewport, |context, graphics| {
-            let context = context.trans(-scroll_x, scroll_y);
-            graphics::clear(graphics::color::BLACK, graphics);
-            graphics::Rectangle::new(graphics::color::WHITE).draw(
-                map.boundaries(),
-                &context.draw_state,
-                context.trans(screen_width / 2.0, screen_height / 2.0).flip_v().transform,
-                graphics,
-            );
-            graphics::image(
-                player.get_current_image(&cache.player),
-                context.trans(
-                    screen_width / 2.0 + player.absolute_x.ceil() + PLAYER_IMAGE_X_OFFSET as f64,
-                    screen_height / 2.0 - cache.player.get_height() as f64
-                        - player.absolute_y.ceil() - PLAYER_IMAGE_Y_OFFSET as f64
-                ).transform,
-                graphics,
-            );
-            for block in map.blocks() {
-                graphics::Rectangle::new(graphics::color::BLACK).draw(
-                    block,
-                    &context.draw_state,
-                    context.trans(screen_width / 2.0, screen_height / 2.0).flip_v().transform,
-                    graphics,
-                );
-            }
-        })
-    }
-
-    pub fn process(&mut self, event: Event) {
-        event.render(|event| self.render(event));
-        self.player.event(&event, &self.map);
-    }
+    scenes::MAIN_MENU.run(&window_rc, &mut graphics, &mut cache)
 }
 
 pub struct PlayerGraphics {
@@ -164,12 +96,14 @@ impl PlayerGraphics {
 
 pub struct GraphicsCache {
     player: PlayerGraphics,
+    font: GlyphCache<'static>,
 }
 
 impl GraphicsCache {
     pub fn load() -> GraphicsCache {
         GraphicsCache {
             player: PlayerGraphics::load(),
+            font: GlyphCache::from_bytes(include_bytes!("../ttf/XXX.ttf")).unwrap(),
         }
     }
 }
