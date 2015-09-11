@@ -1,0 +1,7 @@
+start: 500,550
+
+bounds: 0,0,1000,1000
+
+platform.box: 400,400,10,10
+platform.box: 500,500,10,10
+platform.line: 450,450,e,60

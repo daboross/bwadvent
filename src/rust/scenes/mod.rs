@@ -65,9 +65,10 @@ fn find_level_dir() -> PathBuf {
 fn play_scene(window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut GraphicsCache) {
     let level_dir = find_level_dir();
 
-    let play_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|item| {
-        let name = item.file_name().to_string_lossy().into_owned();
-        let path = item.path();
+    let play_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
+            .filter(|path| path.extension().and_then(|e| e.to_str()) == Some("map")).map(|path| {
+        // unwrap here because DirEntry guarantees that there will be a file name.
+        let name = path.file_stem().unwrap().to_string_lossy().into_owned();
 
         (name, Box::new(move |window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut GraphicsCache| {
             play::PlayScene::new(&path).run(window, graphics, cache);
