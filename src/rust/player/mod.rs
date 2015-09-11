@@ -53,7 +53,7 @@ impl SingleInputState {
         }
     }
 
-    fn is_pressed(&mut self) -> bool {
+    fn is_pressed(&self) -> bool {
         if let Pressed = *self {
             true
         } else {

@@ -82,12 +82,12 @@ impl Map {
 impl<'a> From<&'a level_serialization::Level> for Map {
     fn from(level: &'a level_serialization::Level) -> Map {
         let blocks = level.items.iter().map(|item| {
-            match item {
-                &level_serialization::LevelItem::Box { x, y, width, height } => {
+            match *item {
+                level_serialization::LevelItem::Box { x, y, width, height } => {
                     Platform { min_x: x, min_y: y, len_x: width, len_y: height,
                                 platform_type: PlatformType::Box }
                 },
-                &level_serialization::LevelItem::Line { x, y, direction, length } => {
+                level_serialization::LevelItem::Line { x, y, direction, length } => {
                     match direction {
                         level_serialization::Direction::North => {
                             Platform { min_x: x, min_y: y, len_x: 1.0, len_y: length,

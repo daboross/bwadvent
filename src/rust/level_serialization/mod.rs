@@ -204,11 +204,11 @@ pub fn save_level<T: ?Sized>(level: &Level, out: &mut T) -> io::Result<()> where
     try!(write!(out, "bounds: {:.2},{:.2},{:.2},{:.2}\n\n",
         level.east_boundary, level.south_boundary, level.west_boundary, level.north_boundary));
     for item in &level.items {
-        match item {
-            &LevelItem::Box { x, y, width, height } => {
+        match *item {
+            LevelItem::Box { x, y, width, height } => {
                 try!(write!(out, "platform.box: {:.2},{:.2},{:.2},{:.2}\n", x, y, width, height));
             },
-            &LevelItem::Line { x, y, direction, length } => {
+            LevelItem::Line { x, y, direction, length } => {
                 try!(write!(out, "platform.line: {:.2},{:.2},{},{:.2}\n", x, y, direction, length))
             }
         }
