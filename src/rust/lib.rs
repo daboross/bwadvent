@@ -6,7 +6,6 @@ extern crate image;
 extern crate time;
 #[macro_use] extern crate nom;
 extern crate collisions;
-#[macro_use] extern crate lazy_static;
 
 mod level_serialization;
 mod map;

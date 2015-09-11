@@ -113,7 +113,7 @@ fn draw_text<T: AsRef<str>>(
             text_width += cache.font.character(text_size, c).width();
         }
 
-        graphics::Text::colored(color, text_size).draw(
+        graphics::Text::new_color(color, text_size).draw(
             text,
             &mut cache.font,
             &context.draw_state,
