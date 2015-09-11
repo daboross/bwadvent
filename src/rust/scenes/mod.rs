@@ -28,10 +28,10 @@ use super::{
 pub type SceneRunFn<'a> = for<'b, 'c, 'd> Fn(&'b Rc<RefCell<Window>>, &'c mut Graphics, &'d mut GraphicsCache) + Sync + 'a;
 
 pub static MAIN_MENU: MenuScene<'static> = MenuScene {
-    title: "B/W ADVENT",
+    title: "B/W ADVENTURES",
     options: &[
         ("PLAY", &play_scene as &SceneRunFn),
-        ("EDITOR", &editor_scene as &SceneRunFn),
+        ("EDIT", &editor_scene as &SceneRunFn),
     ]
 };
 
@@ -89,7 +89,7 @@ fn editor_scene(_window: &Rc<RefCell<Window>>, _graphics: &mut Graphics,
 
 
 fn draw_text<T: AsRef<str>>(
-        position: [f64; 3],
+        position: [f64; 4],
         text: T,
         text_size: u32,
         color: Color,
@@ -99,19 +99,27 @@ fn draw_text<T: AsRef<str>>(
     ) {
     let x_pos = position[0];
     let y_pos = position[1];
-    let height = position[2];
+    let width = position[2];
+    let height = position[3];
     let text = text.as_ref();
     if let Some(first_char) = text.chars().next() {
-        let (text_height, text_offset) = {
+        let (text_height, text_offset_top) = {
             let graphics_char = cache.font.character(text_size, first_char);
             (graphics_char.height(), graphics_char.top())
         };
+        let mut text_width = 0.0;
+        for c in text.chars() {
+            text_width += cache.font.character(text_size, c).width();
+        }
 
         graphics::Text::colored(color, text_size).draw(
             text,
             &mut cache.font,
             &context.draw_state,
-            context.trans(x_pos, (y_pos + height / 2.0 - text_height / 2.0 + text_offset / 2.0).floor()).transform,
+            context.trans(
+                (x_pos + width / 2.0 - text_width / 2.0).floor(),
+                (y_pos + height / 2.0 - text_height / 2.0 + text_offset_top / 2.0).floor()
+            ).transform,
             graphics
         );
     }
@@ -151,12 +159,12 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                 graphics.draw(viewport, |context, graphics| {
                     graphics::clear(graphics::color::BLACK, graphics);
                     let width = f64::min(screen_width * 0.8,  400.0).floor();
-                    let height = f64::min(screen_height * 0.8 / ((self.options.len() + 2) as f64 * 1.2),
-                                            20.0).floor();
+                    let height = f64::min(screen_height * 0.8 / ((self.options.len() + 2) as f64 *
+                            1.2), 20.0).floor();
                     let x_pos = ((screen_width - width) / 2.0).floor();
 
                     draw_text(
-                        [x_pos, screen_height * 0.2, height * 1.5],
+                        [x_pos, screen_height * 0.2, width, height * 1.5],
                         &self.title,
                         (height * 1.5) as u32,
                         graphics::color::WHITE,
@@ -179,7 +187,7 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                         );
 
                         draw_text(
-                            [x_pos, y_pos, height],
+                            [x_pos, y_pos, width, height],
                             text,
                             (height * 0.8) as u32,
                             graphics::color::BLACK,

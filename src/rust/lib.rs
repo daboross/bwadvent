@@ -101,7 +101,7 @@ impl GraphicsCache {
     pub fn load() -> GraphicsCache {
         GraphicsCache {
             player: PlayerGraphics::load(),
-            font: GlyphCache::from_bytes(include_bytes!("../ttf/XXX.ttf")).unwrap(),
+            font: GlyphCache::from_bytes(include_bytes!("../ttf/SigmarOne.ttf")).unwrap(),
         }
     }
 }
