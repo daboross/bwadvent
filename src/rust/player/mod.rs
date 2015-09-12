@@ -173,11 +173,7 @@ pub struct Player {
 
 impl Player {
     pub fn new(x: f64, y: f64) -> Player {
-        Player {
-            absolute_x: x,
-            absolute_y: y,
-            .. Player::default()
-        }
+        Player { absolute_x: x, absolute_y: y, ..Player::default() }
     }
 
     fn update(&mut self, args: &UpdateArgs, map: &Map) {
@@ -199,7 +195,7 @@ impl Player {
                     self.x_velocity += 500.0 * time;
                 }
                 self.last_movement = MovementState::MovingRight;
-            },
+            }
             (true, false) => {
                 if self.grounded {
                     self.x_velocity -= 1000.0 * time;
@@ -207,7 +203,7 @@ impl Player {
                     self.x_velocity -= 500.0 * time;
                 }
                 self.last_movement = MovementState::MovingLeft;
-            },
+            }
             (_, _) => self.last_movement.set_still(),
         }
 
@@ -240,28 +236,28 @@ impl Player {
             (Some(w1), _, Some(w2), _) => {
                 self.absolute_x = (w1 + w2) / 2.0;
                 self.last_movement.set_still();
-            },
+            }
             (Some(wall), true, None, _) | (None, _, Some(wall), true) => {
                 self.absolute_x = wall;
                 self.last_movement.set_still();
-            },
+            }
             (_, _, _, _) => {
                 self.absolute_x = new_x;
-            },
+            }
         }
         match (collisions.south, new_y <= self.absolute_y,
                 collisions.north, new_y >= self.absolute_y) {
             (Some(w1), _, Some(_), _) => {
                 self.absolute_y = w1;
                 self.y_velocity = 0.0;
-            },
+            }
             (Some(wall), true, None, _) | (None, _, Some(wall), true) => {
                 self.absolute_y = wall;
                 self.y_velocity = 0.0;
-            },
+            }
             (_, _, _, _) => {
                 self.absolute_y = new_y;
-            },
+            }
         }
 
         fn jump(player: &mut Player) {
@@ -301,22 +297,22 @@ impl Player {
             match self.last_movement {
                 MovementState::StillLeft => {
                     &cache.standing_left
-                },
+                }
                 MovementState::StillRight => {
                     &cache.standing_right
-                },
+                }
                 MovementState::MovingLeft => {
                     &cache.run_left[5 - self.absolute_x.ceil() as usize / 4 % 6]
-                },
+                }
                 MovementState::MovingRight => {
                     &cache.run_right[self.absolute_x.ceil() as usize / 4 % 6]
-                },
+                }
             }
         } else {
             match self.last_movement {
                 MovementState::StillLeft | MovementState::MovingLeft => {
                     &cache.run_left[0]
-                },
+                }
                 MovementState::StillRight | MovementState::MovingRight => {
                     &cache.run_right[0]
                 }

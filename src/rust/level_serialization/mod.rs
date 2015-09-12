@@ -23,8 +23,18 @@ impl fmt::Display for Direction {
 
 #[derive(Debug, Clone, Copy)]
 pub enum LevelItem {
-    Box { x: f64, y: f64, width: f64, height: f64 },
-    Line { x: f64, y: f64, direction: Direction, length: f64 }
+    Box {
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    },
+    Line {
+        x: f64,
+        y: f64,
+        direction: Direction,
+        length: f64,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -207,7 +217,7 @@ pub fn save_level<T: ?Sized>(level: &Level, out: &mut T) -> io::Result<()> where
         match *item {
             LevelItem::Box { x, y, width, height } => {
                 try!(write!(out, "platform.box: {:.2},{:.2},{:.2},{:.2}\n", x, y, width, height));
-            },
+            }
             LevelItem::Line { x, y, direction, length } => {
                 try!(write!(out, "platform.line: {:.2},{:.2},{},{:.2}\n", x, y, direction, length))
             }

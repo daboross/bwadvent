@@ -8,22 +8,13 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use piston::input::{
-    RenderEvent,
-    PressEvent,
-    Button,
-    Key,
-};
+use piston::input::{RenderEvent, PressEvent, Button, Key};
 use piston::event_loop::Events;
 use graphics::{self, Context, Transformed};
 use graphics::types::Color;
 use graphics::character::CharacterCache;
 
-use super::{
-    Window,
-    Graphics,
-    GraphicsCache,
-};
+use super::{Window, Graphics, GraphicsCache};
 
 pub type SceneRunFn<'a> = for<'b, 'c, 'd> Fn(&'b Rc<RefCell<Window>>, &'c mut Graphics, &'d mut GraphicsCache) + Sync + 'a;
 
@@ -32,7 +23,7 @@ pub static MAIN_MENU: MenuScene<'static> = MenuScene {
     options: &[
         ("PLAY", &play_scene as &SceneRunFn),
         ("EDIT", &editor_scene as &SceneRunFn),
-    ]
+    ],
 };
 
 fn find_level_dir() -> PathBuf {
@@ -57,8 +48,7 @@ fn find_level_dir() -> PathBuf {
                 };
             }
         }
-        current_dir = current_dir.parent()
-            .expect("Reached filesystem root in search for maps dir");
+        current_dir = current_dir.parent().expect("Reached filesystem root in search for maps dir");
     }
 }
 
@@ -75,29 +65,25 @@ fn play_scene(window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut
         }) as Box<Fn(&Rc<RefCell<Window>>, &mut Graphics, &mut GraphicsCache) + Sync>)
     }).collect::<Vec<_>>();
 
-    let menu = MenuScene {
-        title: "CHOOSE LEVEL",
-        options: &play_options[..],
-    };
+    let menu = MenuScene { title: "CHOOSE LEVEL", options: &play_options[..] };
 
     menu.run(window, graphics, cache);
 }
 
-fn editor_scene(_window: &Rc<RefCell<Window>>, _graphics: &mut Graphics,
-        _cache: &mut GraphicsCache) {
+fn editor_scene(_window: &Rc<RefCell<Window>>,
+                _graphics: &mut Graphics,
+                _cache: &mut GraphicsCache) {
     println!("EDITOR SCENE");
 }
 
 
-fn draw_text<T: AsRef<str>>(
-        position: [f64; 4],
-        text: T,
-        text_size: u32,
-        color: Color,
-        cache: &mut GraphicsCache,
-        context: &Context,
-        graphics: &mut Graphics
-    ) {
+fn draw_text<T: AsRef<str>>(position: [f64; 4],
+                            text: T,
+                            text_size: u32,
+                            color: Color,
+                            cache: &mut GraphicsCache,
+                            context: &Context,
+                            graphics: &mut Graphics) {
     let x_pos = position[0];
     let y_pos = position[1];
     let width = position[2];
@@ -138,8 +124,10 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
         where TiT: AsRef<str> + 'a,
                 OpT: AsRef<str> + 'a,
                 FnT: Deref<Target=SceneRunFn<'a>> + 'a {
-    pub fn run(&self, window: &Rc<RefCell<Window>>,
-            graphics: &mut Graphics, cache: &mut GraphicsCache) {
+    pub fn run(&self,
+               window: &Rc<RefCell<Window>>,
+               graphics: &mut Graphics,
+               cache: &mut GraphicsCache) {
         let mut selected = 0usize;
 
         for event in window.events() {
@@ -206,11 +194,11 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                         } else {
                             selected -= 1;
                         }
-                    },
+                    }
                     Button::Keyboard(Key::Down) => {
                         selected += 1;
                         selected %= self.options.len();
-                    },
+                    }
                     Button::Keyboard(Key::Return) => {
                         (self.options[selected].1)(window, graphics, cache);
                     }

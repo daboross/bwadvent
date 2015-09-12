@@ -4,7 +4,8 @@ extern crate glutin_window;
 extern crate opengl_graphics;
 extern crate image;
 extern crate time;
-#[macro_use] extern crate nom;
+#[macro_use]
+extern crate nom;
 extern crate collisions;
 
 mod level_serialization;
@@ -21,10 +22,7 @@ use opengl_graphics::glyph_cache::GlyphCache;
 use opengl_graphics::Texture as OpenGlTexture;
 use piston::window::WindowSettings;
 
-use player::{
-    PLAYER_IMAGE_WIDTH,
-    PLAYER_IMAGE_HEIGHT,
-};
+use player::{PLAYER_IMAGE_WIDTH, PLAYER_IMAGE_HEIGHT};
 
 pub type Window = glutin_window::GlutinWindow;
 pub type Graphics = opengl_graphics::GlGraphics;
@@ -100,7 +98,8 @@ impl GraphicsCache {
     pub fn load() -> GraphicsCache {
         GraphicsCache {
             player: PlayerGraphics::load(),
-            font: GlyphCache::from_bytes(include_bytes!("../ttf/SigmarOne.ttf")).unwrap(),
+            font: GlyphCache::from_bytes(include_bytes!("../ttf/SigmarOne.ttf"))
+                      .unwrap(),
         }
     }
 }
@@ -110,7 +109,8 @@ impl GraphicsCache {
 //     let image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
 fn load_texture(bytes: &[u8]) -> OpenGlTexture {
     let image = image::load_from_memory_with_format(bytes.as_ref(), image::ImageFormat::PNG)
-        .unwrap().to_rgba();
+                    .unwrap()
+                    .to_rgba();
 
     opengl_graphics::Texture::from_image(&image)
 }
@@ -120,7 +120,8 @@ fn load_texture(bytes: &[u8]) -> OpenGlTexture {
 //     let mut image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
 fn load_texture_frames(bytes: &[u8], num_frames: u32) -> Vec<OpenGlTexture> {
     let mut image = image::load_from_memory_with_format(bytes.as_ref(), image::ImageFormat::PNG)
-        .unwrap().to_rgba();
+                        .unwrap()
+                        .to_rgba();
     let (image_width, height) = image.dimensions();
 
     assert_eq!(image_width % num_frames, 0);

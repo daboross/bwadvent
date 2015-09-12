@@ -25,7 +25,8 @@ impl PlayScene {
             file.read_to_end(&mut buf).unwrap();
         }
         PlayScene {
-            map: load_level(&buf).expect(&format!("Failed to load level: {}", level_file.as_ref().display())),
+            map: load_level(&buf).expect(&format!("Failed to load level: {}",
+                level_file.as_ref().display())),
         }
     }
 
@@ -56,7 +57,7 @@ impl<'a> PlayData<'a> {
             graphics: graphics,
             cache: cache,
             player: Player::new(map.initial_x(), map.initial_y()),
-            map: map
+            map: map,
         }
     }
 
