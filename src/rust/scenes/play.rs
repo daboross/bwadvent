@@ -4,14 +4,14 @@ use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{RenderArgs, Event, RenderEvent, PressEvent, Button, Key};
+use piston::input::{Button, Event, Key, PressEvent, RenderArgs, RenderEvent};
 use piston::event_loop::Events;
-use graphics::{Transformed, ImageSize};
+use graphics::{ImageSize, Transformed};
 
-use super::super::{graphics, Window, Graphics, GraphicsCache};
+use super::super::{Graphics, GraphicsCache, Window, graphics};
 use level_serialization::{Level, load_level};
 use map::Map;
-use player::{Player, PLAYER_IMAGE_X_OFFSET, PLAYER_IMAGE_Y_OFFSET};
+use player::{PLAYER_IMAGE_X_OFFSET, PLAYER_IMAGE_Y_OFFSET, Player};
 
 pub struct PlayScene {
     map: Level,
@@ -51,7 +51,7 @@ struct PlayData<'a> {
 
 impl<'a> PlayData<'a> {
     pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache)
-            -> PlayData<'b> {
+                   -> PlayData<'b> {
         let map = Map::from(level.clone());
         PlayData {
             graphics: graphics,

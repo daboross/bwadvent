@@ -1,0 +1,5 @@
+reorder_imports = true
+fn_args_density = "Compressed"
+fn_brace_style = "PreferSameLine"
+max_width = 100
+ideal_width = 100

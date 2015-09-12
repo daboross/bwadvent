@@ -22,7 +22,7 @@ use opengl_graphics::glyph_cache::GlyphCache;
 use opengl_graphics::Texture as OpenGlTexture;
 use piston::window::WindowSettings;
 
-use player::{PLAYER_IMAGE_WIDTH, PLAYER_IMAGE_HEIGHT};
+use player::{PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH};
 
 pub type Window = glutin_window::GlutinWindow;
 pub type Graphics = opengl_graphics::GlGraphics;
