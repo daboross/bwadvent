@@ -2,7 +2,7 @@
 name = "bwadvent"
 version = "0.1.0"
 dependencies = [
- "collisions 0.1.0",
+ "collisions 0.1.0 (git+https://github.com/daboross/rust-temp-collisions.git)",
  "image 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -59,6 +59,7 @@ dependencies = [
 [[package]]
 name = "collisions"
 version = "0.1.0"
+source = "git+https://github.com/daboross/rust-temp-collisions.git#caf1e8bda5866c6f78b48e4ba1ec68d1255a1d7e"
 
 [[package]]
 name = "color_quant"

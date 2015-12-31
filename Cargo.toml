@@ -14,5 +14,5 @@ piston = "0.16"
 piston2d-graphics = "0.13"
 pistoncore-glutin_window = "0.20"
 piston2d-opengl_graphics = "0.22"
-collisions = { path = "../collisions/" }
+collisions = { git = "https://github.com/daboross/rust-temp-collisions.git" }
 image = { version = "0.6", default-features = false, features = ["png"] }
