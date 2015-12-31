@@ -154,9 +154,9 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                         let y_pos = (screen_height * 0.2 + (index + 2) as f64 * height * 1.2
                                 ).floor();
                         let color = if index == selected {
-                            graphics::color::grey(0.2)
-                        } else {
                             graphics::color::WHITE
+                        } else {
+                            graphics::color::grey(0.2)
                         };
                         graphics::Rectangle::new(color).draw(
                             [x_pos, y_pos, width, height],
@@ -190,6 +190,7 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                         selected %= self.options.len();
                     }
                     Button::Keyboard(Key::Return) => {
+                        println!("Selected: {}", selected);
                         (self.options[selected].1)(window, graphics, cache);
                     }
                     _ => (),
