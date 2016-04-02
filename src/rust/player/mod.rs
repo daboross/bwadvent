@@ -5,6 +5,7 @@ use opengl_graphics::Texture as OpenGlTexture;
 use collisions::HasBounds;
 use collisions;
 
+use super::Window;
 use super::PlayerGraphics;
 use map::Map;
 
@@ -286,7 +287,7 @@ impl Player {
         }
     }
 
-    pub fn event(&mut self, event: &Event, map: &Map) {
+    pub fn event(&mut self, event: &Window, map: &Map) {
         event.press(|b| self.input.pressed(b));
         event.release(|b| self.input.released(b));
         event.update(|args| self.update(args, map));

@@ -2,13 +2,13 @@ use collisions;
 use level_serialization;
 
 #[derive(Debug, Copy, Clone)]
-enum PlatformType {
+pub enum PlatformType {
     Box,
     Line,
 }
 
 #[derive(Debug, Copy, Clone)]
-struct Platform {
+pub struct Platform {
     min_x: f64,
     min_y: f64,
     len_x: f64,

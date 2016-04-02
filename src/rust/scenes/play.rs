@@ -1,11 +1,8 @@
 use std::path::Path;
-use std::rc::Rc;
-use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{Button, Event, Key, PressEvent, RenderArgs, RenderEvent};
-use piston::event_loop::Events;
+use piston::input::{Button, Key, PressEvent, RenderArgs, RenderEvent};
 use graphics::{ImageSize, Transformed};
 
 use super::super::{Graphics, GraphicsCache, Window, graphics};
@@ -30,10 +27,10 @@ impl PlayScene {
         }
     }
 
-    pub fn run(&self, window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
         let mut session = PlayData::new(&self.map, graphics, cache);
 
-        for event in window.events() {
+        for event in window.clone() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
                 break;
             }
@@ -106,7 +103,7 @@ impl<'a> PlayData<'a> {
         })
     }
 
-    pub fn process(&mut self, event: Event) {
+    pub fn process(&mut self, event: Window) {
         event.render(|event| self.render(event));
         self.player.event(&event, &self.map);
     }

@@ -4,19 +4,16 @@ use std::ops::Deref;
 use std::f64;
 use std::fs;
 use std::env::current_dir;
-use std::rc::Rc;
-use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
 use piston::input::{Button, Key, PressEvent, RenderEvent};
-use piston::event_loop::Events;
 use graphics::{self, Context, Transformed};
 use graphics::types::Color;
 use graphics::character::CharacterCache;
 
 use super::{Graphics, GraphicsCache, Window};
 
-pub type SceneRunFn<'a> = for<'b, 'c, 'd> Fn(&'b Rc<RefCell<Window>>, &'c mut Graphics, &'d mut GraphicsCache) + Sync + 'a;
+pub type SceneRunFn<'a> = for<'b, 'c, 'd> Fn(&'b Window, &'c mut Graphics, &'d mut GraphicsCache) + Sync + 'a;
 
 pub static MAIN_MENU: MenuScene<'static> = MenuScene {
     title: "B/W ADVENTURES",
@@ -52,7 +49,7 @@ fn find_level_dir() -> PathBuf {
     }
 }
 
-fn play_scene(window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
     let level_dir = find_level_dir();
 
     let play_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
@@ -60,9 +57,9 @@ fn play_scene(window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut
         // unwrap here because DirEntry guarantees that there will be a file name.
         let name = path.file_stem().unwrap().to_string_lossy().into_owned();
 
-        (name, Box::new(move |window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut GraphicsCache| {
+        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache| {
             play::PlayScene::new(&path).run(window, graphics, cache);
-        }) as Box<Fn(&Rc<RefCell<Window>>, &mut Graphics, &mut GraphicsCache) + Sync>)
+        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache) + Sync>)
     }).collect::<Vec<_>>();
 
     let menu = MenuScene { title: "CHOOSE LEVEL", options: &play_options[..] };
@@ -70,7 +67,7 @@ fn play_scene(window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut
     menu.run(window, graphics, cache);
 }
 
-fn editor_scene(_window: &Rc<RefCell<Window>>, _graphics: &mut Graphics, _cache: &mut GraphicsCache) {
+fn editor_scene(_window: &Window, _graphics: &mut Graphics, _cache: &mut GraphicsCache) {
     println!("EDITOR SCENE");
 }
 
@@ -117,10 +114,10 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
         where TiT: AsRef<str> + 'a,
                 OpT: AsRef<str> + 'a,
                 FnT: Deref<Target=SceneRunFn<'a>> + 'a {
-    pub fn run(&self, window: &Rc<RefCell<Window>>, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
         let mut selected = 0usize;
 
-        for event in window.events() {
+        for event in window.clone() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
                 break;
             }

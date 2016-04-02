@@ -1,7 +1,7 @@
 extern crate piston;
 extern crate graphics;
-extern crate glutin_window;
 extern crate opengl_graphics;
+extern crate piston_window;
 extern crate image;
 extern crate time;
 #[macro_use]
@@ -13,9 +13,6 @@ mod map;
 mod player;
 mod scenes;
 
-use std::rc::Rc;
-use std::cell::RefCell;
-
 use graphics::ImageSize;
 use opengl_graphics::glyph_cache::GlyphCache;
 
@@ -24,23 +21,20 @@ use piston::window::WindowSettings;
 
 use player::{PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH};
 
-pub type Window = glutin_window::GlutinWindow;
+pub type Window = piston_window::PistonWindow;
 pub type Graphics = opengl_graphics::GlGraphics;
 
 pub fn run() {
     let opengl_version = opengl_graphics::OpenGL::V3_2;
 
-    let window = glutin_window::GlutinWindow::new(
-        WindowSettings::new("b-w-adventures", [640u32, 480u32])
+    let window = WindowSettings::new("b-w-adventures", [640u32, 480u32])
                         .exit_on_esc(false)
-                        .opengl(opengl_version)
-    ).unwrap();
+                        .opengl(opengl_version).build().unwrap();
 
     let mut graphics = opengl_graphics::GlGraphics::new(opengl_version);
     let mut cache = GraphicsCache::load();
-    let window_rc = Rc::new(RefCell::new(window));
 
-    scenes::MAIN_MENU.run(&window_rc, &mut graphics, &mut cache)
+    scenes::MAIN_MENU.run(&window, &mut graphics, &mut cache)
 }
 
 pub struct PlayerGraphics {
