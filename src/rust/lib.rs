@@ -17,6 +17,7 @@ use graphics::ImageSize;
 use opengl_graphics::glyph_cache::GlyphCache;
 
 use opengl_graphics::Texture as OpenGlTexture;
+use opengl_graphics::TextureSettings;
 use piston::window::WindowSettings;
 
 use player::{PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH};
@@ -25,11 +26,13 @@ pub type Window = piston_window::PistonWindow;
 pub type Graphics = opengl_graphics::GlGraphics;
 
 pub fn run() {
-    let opengl_version = opengl_graphics::OpenGL::V3_2;
+    let opengl_version = opengl_graphics::OpenGL::V3_0;
 
     let window = WindowSettings::new("b-w-adventures", [640u32, 480u32])
                         .exit_on_esc(false)
-                        .opengl(opengl_version).build().unwrap();
+                        .srgb(false)
+                        .opengl(opengl_version)
+                        .build().unwrap();
 
     let mut graphics = opengl_graphics::GlGraphics::new(opengl_version);
     let mut cache = GraphicsCache::load();
@@ -106,7 +109,7 @@ fn load_texture(bytes: &[u8]) -> OpenGlTexture {
                     .unwrap()
                     .to_rgba();
 
-    opengl_graphics::Texture::from_image(&image)
+    opengl_graphics::Texture::from_image(&image, &TextureSettings::new())
 }
 
 // fn load_texture_frames<T: AsRef<Path> + ?Sized>(path: &T, num_frames: u32) -> Vec<OpenGlTexture> {
@@ -125,6 +128,6 @@ fn load_texture_frames(bytes: &[u8], num_frames: u32) -> Vec<OpenGlTexture> {
     (0..num_frames).map(|x| {
         let sub_image = image::SubImage::new(&mut image, x * width, 0, width, height);
 
-        opengl_graphics::Texture::from_image(&sub_image.to_image())
+        opengl_graphics::Texture::from_image(&sub_image.to_image(), &TextureSettings::new())
     }).collect()
 }

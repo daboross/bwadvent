@@ -8,11 +8,11 @@ name = "bwadvent"
 path = "src/rust/lib.rs"
 
 [dependencies]
-nom = "1.2.1"
+nom = "1.2"
 time = "0.1"
-piston = "0.17"
-piston_window ="0.34.0"
-piston2d-graphics = "0.13"
-piston2d-opengl_graphics = "0.23"
+piston = "0.19"
+piston_window = "0.42"
+piston2d-graphics = "0.16"
+piston2d-opengl_graphics = "0.26"
 collisions = { git = "https://github.com/daboross/rust-temp-collisions.git" }
-image = { version = "0.6", default-features = false, features = ["png"] }
+image = { version = "0.9", default-features = false, features = ["png"] }
