@@ -2,7 +2,9 @@ start: 0,0
 
 bounds: -200,-200,1000,1000
 
-platform.box: -100,-100,200,200
+platform.box: -100,-100,200,20
+platform.line: -100,-100,n,200
+platform.line: 120,-50,e,400
 platform.box: -131,903,54,18
 platform.box: -134,824,57,20
 platform.box: -135,590,56,34

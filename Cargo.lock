@@ -69,7 +69,7 @@ dependencies = [
 [[package]]
 name = "collisions"
 version = "0.1.0"
-source = "git+https://github.com/daboross/rust-temp-collisions.git#caf1e8bda5866c6f78b48e4ba1ec68d1255a1d7e"
+source = "git+https://github.com/daboross/rust-temp-collisions.git#fbd31ff965f6c790a57347bdb04073a95d157935"
 
 [[package]]
 name = "color_quant"
