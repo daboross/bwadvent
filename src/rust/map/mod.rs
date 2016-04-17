@@ -16,6 +16,18 @@ pub struct Platform {
     platform_type: PlatformType,
 }
 
+impl Platform {
+    pub fn new_box(min_x: f64, min_y: f64, len_x: f64, len_y: f64) -> Platform {
+        Platform {
+            min_x: min_x,
+            min_y: min_y,
+            len_x: len_x,
+            len_y: len_y,
+            platform_type: PlatformType::Box,
+        }
+    }
+}
+
 impl collisions::HasBounds for Platform {
     fn min_x(&self) -> f64 {
         self.min_x
@@ -59,6 +71,10 @@ pub struct Map {
 impl Map {
     pub fn blocks(&self) -> &[Platform] {
         &self.blocks
+    }
+
+    pub fn add_block(&mut self, block: Platform) {
+        self.blocks.push(block);
     }
 
     pub fn boundary_collision_lines(&self) -> &[Platform] {

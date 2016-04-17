@@ -34,22 +34,22 @@ impl PlayScene {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
                 break;
             }
-            session.process(event);
+            session.process(&event);
         }
     }
 }
 
-struct PlayData<'a> {
-    graphics: &'a mut Graphics,
-    cache: &'a mut GraphicsCache,
-    map: Map,
-    player: Player,
+pub struct PlayData<'a> {
+    pub graphics: &'a mut Graphics,
+    pub cache: &'a mut GraphicsCache,
+    pub map: Map,
+    pub player: Player,
 }
 
 impl<'a> PlayData<'a> {
     pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache)
                    -> PlayData<'b> {
-        let map = Map::from(level.clone());
+        let map = Map::from(level);
         PlayData {
             graphics: graphics,
             cache: cache,
@@ -103,7 +103,7 @@ impl<'a> PlayData<'a> {
         })
     }
 
-    pub fn process(&mut self, event: Window) {
+    pub fn process(&mut self, event: &Window) {
         event.render(|event| self.render(event));
         self.player.event(&event, &self.map);
     }

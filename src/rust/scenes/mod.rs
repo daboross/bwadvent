@@ -1,4 +1,5 @@
 mod play;
+mod editor;
 
 use std::ops::Deref;
 use std::f64;
@@ -67,8 +68,22 @@ fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCach
     menu.run(window, graphics, cache);
 }
 
-fn editor_scene(_window: &Window, _graphics: &mut Graphics, _cache: &mut GraphicsCache) {
-    println!("EDITOR SCENE");
+fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+    let level_dir = find_level_dir();
+
+    let editor_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
+            .filter(|path| path.extension().and_then(|e| e.to_str()) == Some("map")).map(|path| {
+        // unwrap here because DirEntry guarantees that there will be a file name.
+        let name = path.file_stem().unwrap().to_string_lossy().into_owned();
+
+        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache| {
+            editor::EditorScene::new(&path).run(window, graphics, cache);
+        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache) + Sync>)
+    }).collect::<Vec<_>>();
+
+    let menu = MenuScene { title: "CHOOSE LEVEL", options: &editor_options[..] };
+
+    menu.run(window, graphics, cache);
 }
 
 
