@@ -4,10 +4,10 @@ use std::io::Read;
 
 use piston::input::{Button, Key, MouseButton, PressEvent, RenderEvent, ReleaseEvent,
     MouseCursorEvent};
+use graphics::{Transformed, self};
 
+use ::{Graphics, GraphicsCache, Window};
 use super::play::PlayData;
-
-use super::super::{Graphics, GraphicsCache, Window};
 use level_serialization::{Level, load_level};
 use map::Platform;
 
@@ -67,6 +67,34 @@ impl<'a> EditorData<'a> {
         event.render(|args| {
             self.screen_width = args.width as f64;
             self.screen_height = args.height as f64;
+            if let Some((start_x, start_y)) = self.scroll_start {
+                let viewport = graphics::Viewport {
+                    rect: [0, 0, args.width as i32, args.height as i32],
+                    draw_size: [1; 2],
+                    window_size: [1; 2],
+                };
+
+                let (scroll_x, scroll_y) = (self.play_data.player.last_scroll_x, self.play_data.player.last_scroll_y);
+
+                let screen_width = args.width as f64;
+                let screen_height = args.height as f64;
+
+                let current_x = self.current_mouse_x + scroll_x - screen_width / 2.0;
+                let current_y = self.current_mouse_y + scroll_y - screen_height / 2.0;
+                let length_x = f64::abs(current_x - start_x);
+                let length_y = f64::abs(current_y - start_y);
+                let min_x = f64::min(start_x, current_x);
+                let min_y = f64::min(start_y, current_y);
+
+                self.play_data.graphics.draw(viewport, |context, graphics| {
+                    graphics::Rectangle::new(graphics::color::BLACK).draw(
+                        [min_x - scroll_x, min_y - scroll_y, length_x, length_y],
+                        &context.draw_state,
+                        context.trans(screen_width / 2.0, screen_height / 2.0).flip_v().transform,
+                        graphics,
+                    );
+                })
+            }
         });
         event.mouse_cursor(|x, y| {
             self.current_mouse_x = x;
@@ -78,7 +106,8 @@ impl<'a> EditorData<'a> {
                     let player = &self.play_data.player;
                     let scroll_x = player.last_scroll_x;
                     let scroll_y = player.last_scroll_y;
-                    self.scroll_start = Some((self.current_mouse_x + scroll_x - self.screen_width / 2.0,
+                    self.scroll_start = Some((
+                        self.current_mouse_x + scroll_x - self.screen_width / 2.0,
                         self.current_mouse_y + scroll_y - self.screen_height / 2.0));
                 },
                 _ => (),
@@ -87,7 +116,7 @@ impl<'a> EditorData<'a> {
         event.release(|button| {
             match button {
                 Button::Mouse(MouseButton::Left) => {
-                    if let Some((start_x, start_y)) = self.scroll_start {
+                    if let Some((start_x, start_y)) = self.scroll_start.take() {
                         let player = &self.play_data.player;
                         let scroll_x = player.last_scroll_x;
                         let scroll_y = player.last_scroll_y;
