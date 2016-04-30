@@ -248,8 +248,8 @@ impl Player {
         }
         match (collisions.south, new_y <= self.absolute_y,
                 collisions.north, new_y >= self.absolute_y) {
-            (Some(w1), _, Some(_), _) => {
-                self.absolute_y = w1;
+            (Some(south_wall), _, Some(_), _) => {
+                self.absolute_y = south_wall;
                 self.y_velocity = 0.0;
             }
             (Some(wall), true, None, _) | (None, _, Some(wall), true) => {
@@ -280,9 +280,11 @@ impl Player {
             } else if collisions.west.is_some() {
                 jump(self);
                 self.x_velocity += 500.0;
+                self.last_movement = MovementState::MovingRight;
             } else if collisions.east.is_some() {
                 jump(self);
                 self.x_velocity -= 500.0;
+                self.last_movement = MovementState::MovingLeft;
             }
         }
     }
