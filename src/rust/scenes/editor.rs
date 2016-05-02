@@ -101,42 +101,36 @@ impl<'a> EditorData<'a> {
             self.current_mouse_y = self.screen_height - y;
         });
         event.press(|button| {
-            match button {
-                Button::Mouse(MouseButton::Left) => {
-                    let player = &self.play_data.player;
-                    let scroll_x = player.last_scroll_x;
-                    let scroll_y = player.last_scroll_y;
-                    self.scroll_start = Some((
-                        self.current_mouse_x + scroll_x - self.screen_width / 2.0,
-                        self.current_mouse_y + scroll_y - self.screen_height / 2.0));
-                },
-                _ => (),
+            if let Button::Mouse(MouseButton::Left) = button {
+                let player = &self.play_data.player;
+                let scroll_x = player.last_scroll_x;
+                let scroll_y = player.last_scroll_y;
+                self.scroll_start = Some((
+                    self.current_mouse_x + scroll_x - self.screen_width / 2.0,
+                    self.current_mouse_y + scroll_y - self.screen_height / 2.0));
             }
         });
         event.release(|button| {
-            match button {
-                Button::Mouse(MouseButton::Left) => {
-                    if let Some((start_x, start_y)) = self.scroll_start.take() {
-                        let player = &self.play_data.player;
-                        let scroll_x = player.last_scroll_x;
-                        let scroll_y = player.last_scroll_y;
-                        let current_x = self.current_mouse_x + scroll_x - self.screen_width / 2.0;
-                        let current_y = self.current_mouse_y + scroll_y - self.screen_height / 2.0;
-                        let min_x = f64::min(start_x, current_x);
-                        let max_x = f64::max(start_x, current_x);
-                        let min_y = f64::min(start_y, current_y);
-                        let max_y = f64::max(start_y, current_y);
-                        let len_x = max_x - min_x;
-                        let len_y = max_y - min_y;
+            if let Button::Mouse(MouseButton::Left) = button {
+                if let Some((start_x, start_y)) = self.scroll_start.take() {
+                    let player = &self.play_data.player;
+                    let scroll_x = player.last_scroll_x;
+                    let scroll_y = player.last_scroll_y;
+                    let current_x = self.current_mouse_x + scroll_x - self.screen_width / 2.0;
+                    let current_y = self.current_mouse_y + scroll_y - self.screen_height / 2.0;
+                    let min_x = f64::min(start_x, current_x);
+                    let max_x = f64::max(start_x, current_x);
+                    let min_y = f64::min(start_y, current_y);
+                    let max_y = f64::max(start_y, current_y);
+                    let len_x = max_x - min_x;
+                    let len_y = max_y - min_y;
 
-                        self.play_data.map.add_block(Platform::new_box(
-                            min_x, min_y, len_x, len_y
-                        ));
+                    self.play_data.map.add_block(Platform::new_box(
+                        min_x, min_y, len_x, len_y
+                    ));
 
-                        println!("platform.box: {:.1},{:.1},{:.1},{:.1}", min_x, min_y, len_x, len_y);
-                    }
-                },
-                _ => (),
+                    println!("platform.box: {:.1},{:.1},{:.1},{:.1}", min_x, min_y, len_x, len_y);
+                }
             }
         });
     }

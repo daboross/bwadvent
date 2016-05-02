@@ -46,7 +46,7 @@ impl collisions::HasBounds for Platform {
     }
 }
 
-/// graphics::Rectangle
+/// `graphics::Rectangle`
 impl<'a> Into<[f64; 4]> for &'a Platform {
     fn into(self) -> [f64; 4] {
         [self.min_x, self.min_y, self.len_x, self.len_y]
