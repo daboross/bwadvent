@@ -7,11 +7,14 @@ target
 *.7z
 *.dmg
 *.gz
+*.xz
 *.iso
 *.jar
 *.rar
 *.tar
 *.zip
+bw-adventures
+bw-adventures.exe
 
 # OS generated files #
 ######################

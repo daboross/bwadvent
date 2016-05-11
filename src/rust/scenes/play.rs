@@ -3,9 +3,9 @@ use std::fs::File;
 use std::io::Read;
 
 use piston::input::{Button, Key, PressEvent, RenderArgs, RenderEvent};
-use graphics::{ImageSize, Transformed};
+use graphics::{ImageSize, Transformed, self};
 
-use super::super::{Graphics, GraphicsCache, Window, graphics};
+use super::super::{Graphics, GraphicsCache, Window};
 use level_serialization::{Level, load_level};
 use map::Map;
 use player::{PLAYER_IMAGE_X_OFFSET, PLAYER_IMAGE_Y_OFFSET, Player};
