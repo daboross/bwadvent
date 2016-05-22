@@ -12,6 +12,7 @@ mod level_serialization;
 mod map;
 mod player;
 mod scenes;
+mod mechanics;
 
 use graphics::ImageSize;
 use opengl_graphics::glyph_cache::GlyphCache;

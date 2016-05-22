@@ -86,9 +86,9 @@ impl<'a> PlayData<'a> {
             graphics::image(
                 player.get_current_image(&cache.player),
                 context.trans(
-                    screen_width / 2.0 + player.absolute_x.ceil() + PLAYER_IMAGE_X_OFFSET as f64,
+                    screen_width / 2.0 + player.state.absolute_x.ceil() + PLAYER_IMAGE_X_OFFSET as f64,
                     screen_height / 2.0 - cache.player.get_height() as f64
-                        - player.absolute_y.ceil() - PLAYER_IMAGE_Y_OFFSET as f64
+                        - player.state.absolute_y.ceil() - PLAYER_IMAGE_Y_OFFSET as f64
                 ).transform,
                 graphics,
             );
