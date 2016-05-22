@@ -5,7 +5,7 @@ use std::io::Read;
 use piston::input::{Button, Key, PressEvent, RenderArgs, RenderEvent};
 use graphics::{ImageSize, Transformed, self};
 
-use super::super::{Graphics, GraphicsCache, Window};
+use super::super::{Graphics, GraphicsCache, Window, SettingsChannel};
 use level_serialization::{Level, load_level};
 use map::Map;
 use player::{PLAYER_IMAGE_X_OFFSET, PLAYER_IMAGE_Y_OFFSET, Player};
@@ -27,8 +27,9 @@ impl PlayScene {
         }
     }
 
-    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
-        let mut session = PlayData::new(&self.map, graphics, cache);
+    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+            sc: &mut SettingsChannel) {
+        let mut session = PlayData::new(&self.map, graphics, cache, sc);
 
         for event in window.clone() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
@@ -43,17 +44,18 @@ pub struct PlayData<'a> {
     pub graphics: &'a mut Graphics,
     pub cache: &'a mut GraphicsCache,
     pub map: Map,
-    pub player: Player,
+    pub player: Player<'a>,
 }
 
 impl<'a> PlayData<'a> {
-    pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache)
+    pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache,
+                    sc: &'b mut SettingsChannel)
                    -> PlayData<'b> {
         let map = Map::from(level);
         PlayData {
             graphics: graphics,
             cache: cache,
-            player: Player::new(map.initial_x(), map.initial_y()),
+            player: Player::new(map.initial_x(), map.initial_y(), sc),
             map: map,
         }
     }

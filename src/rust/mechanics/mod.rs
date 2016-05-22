@@ -1,4 +1,4 @@
-use std::mem;
+use std::sync::mpsc;
 
 use piston::input::*;
 
@@ -8,31 +8,85 @@ use collisions;
 use map::Map;
 use super::Window;
 
-pub struct PlayerSettings {
-    weight: f64,
-    input_force: f64,
-    jump_force: f64,
-    wall_force_y: f64,
-    wall_force_x: f64,
-    gravity_force: f64,
-    drag_constant: f64,
-    tick_constant: f64,
-    jump_duration: f64,
+#[derive(Copy, Clone, Debug)]
+pub enum SettingsUpdate {
+    Weight(f64),
+    InputForce(f64),
+    JumpBoost(f64),
+    WallBoostX(f64),
+    WallBoostY(f64),
+    GravityForce(f64),
+    DragConstant(f64),
+    TickConstant(f64),
+    JumpDuration(f64),
 }
 
-impl Default for PlayerSettings {
-    fn default() -> PlayerSettings {
+pub struct PlayerSettings<'a> {
+    pub weight: f64,
+    pub input_force: f64,
+    pub jump_boost: f64,
+    pub wall_boost_y: f64,
+    pub wall_boost_x: f64,
+    pub gravity_force: f64,
+    pub drag_constant: f64,
+    pub tick_constant: f64,
+    pub jump_duration: f64,
+    pub update_channel: Option<&'a mut mpsc::Receiver<SettingsUpdate>>,
+}
+
+impl<'a> Default for PlayerSettings<'a> {
+    fn default() -> PlayerSettings<'a> {
         PlayerSettings {
-            weight: 1.0,
-            input_force: 100.0,
-            jump_force: 200.0,
-            wall_force_y: 200.0,
-            wall_force_x: 200.0,
-            gravity_force: 100.0,
-            drag_constant: 0.04,
-            tick_constant: 3.0,
+            weight: 3.0,
+            input_force: 367.0,
+            jump_boost: 400.0,
+            wall_boost_y: 250.0,
+            wall_boost_x: 450.0,
+            gravity_force: 305.0,
+            drag_constant: 0.08,
+            tick_constant: 3.7,
             jump_duration: 20.0,
+            update_channel: None,
         }
+    }
+}
+
+impl<'a> PlayerSettings<'a> {
+    fn new<'b>(sc: &'b mut ::SettingsChannel) -> PlayerSettings<'b> {
+        PlayerSettings {
+            update_channel: Some(sc),
+            ..PlayerSettings::default()
+        }
+    }
+
+    fn get_updates(&mut self) {
+        if let Some(channel) = self.update_channel.as_mut() {
+            loop {
+                match channel.try_recv() {
+                    Ok(update) => {
+                        match update {
+                            SettingsUpdate::Weight(v) => self.weight = v,
+                            SettingsUpdate::InputForce(v) => self.input_force = v,
+                            SettingsUpdate::JumpBoost(v) => self.jump_boost = v,
+                            SettingsUpdate::WallBoostX(v) => self.wall_boost_x = v,
+                            SettingsUpdate::WallBoostY(v) => self.wall_boost_y = v,
+                            SettingsUpdate::GravityForce(v) => self.gravity_force = v,
+                            SettingsUpdate::DragConstant(v) => self.drag_constant = v,
+                            SettingsUpdate::TickConstant(v) => self.tick_constant = v,
+                            SettingsUpdate::JumpDuration(v) => self.jump_duration = v,
+                        }
+                    },
+                    Err(mpsc::TryRecvError::Empty) => {
+                        return;
+                    },
+                    Err(mpsc::TryRecvError::Disconnected) => {
+                        break;
+                    }
+                }
+            }
+        }
+        // Will only break for disconnected
+        self.update_channel = None;
     }
 }
 
@@ -60,40 +114,40 @@ impl MovementState {
 }
 
 
-#[derive(Copy, Clone, PartialEq, Eq)]
-enum EffectType {
-    Jumping,
-}
+// #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+// enum EffectType {
+//     Jumping,
+// }
 
-pub struct Effect {
-    pub time_remaining: f64,
-    effect: EffectType,
-}
+// pub struct Effect {
+//     pub time_remaining: f64,
+//     effect: EffectType,
+// }
 
-impl Effect {
-    pub fn effect(&mut self, player: &mut PlayerState, time_changed: f64) {
-        let delta_time = if self.time_remaining < time_changed {
-            self.time_remaining
-        } else {
-            time_changed
-        };
+// impl Effect {
+//     pub fn effect(&mut self, player: &mut PlayerState, time_changed: f64) {
+//         let delta_time = if self.time_remaining < time_changed {
+//             self.time_remaining
+//         } else {
+//             time_changed
+//         };
 
-        match self.effect {
-            EffectType::Jumping => {
-                if player.grounded {
-                    self.time_remaining = 0.0;
-                    return;
-                } else {
-                    player.velocity_y += player.settings.jump_force * delta_time;
-                }
-            }
-        }
-        self.time_remaining -= delta_time;
-    }
-}
+//         match self.effect {
+//             EffectType::Jumping => {
+//                 // if player.grounded {
+//                 //     self.time_remaining = 0.0;
+//                 //     return;
+//                 // } else {
+//                 //     player.velocity_y += player.settings.jump_force * delta_time;
+//                 // }
+//             }
+//         }
+//         self.time_remaining -= delta_time;
+//     }
+// }
 
 #[derive(Default)]
-pub struct PlayerState {
+pub struct PlayerState<'a> {
     pub grounded: bool,
     pub on_left_wall: bool,
     pub on_right_wall: bool,
@@ -102,17 +156,18 @@ pub struct PlayerState {
     pub last_movement: MovementState,
     velocity_x: f64,
     velocity_y: f64,
-    current_effects: Vec<Effect>,
+    // current_effects: Vec<Effect>,
     input_left: bool,
     input_right: bool,
-    settings: PlayerSettings,
+    settings: PlayerSettings<'a>,
 }
 
-impl PlayerState {
-    pub fn new(x: f64, y: f64) -> PlayerState {
+impl<'a> PlayerState<'a> {
+    pub fn new<'b>(x: f64, y: f64, sc: &'b mut ::SettingsChannel) -> PlayerState<'b> {
         PlayerState {
             absolute_x: x,
             absolute_y: y,
+            settings: PlayerSettings::new(sc),
             ..PlayerState::default()
         }
     }
@@ -120,15 +175,17 @@ impl PlayerState {
     fn tick(&mut self, args: &UpdateArgs, map: &Map) {
         let delta_time = args.dt;
 
-        {
-            let mut effects = Vec::new();
-            mem::swap(&mut effects, &mut self.current_effects);
-            for effect in &mut effects {
-                effect.effect(self, delta_time);
-            }
-            effects.retain(|effect| effect.time_remaining > 0.0);
-            mem::swap(&mut effects, &mut self.current_effects);
-        }
+        self.settings.get_updates();
+
+        // {
+        //     let mut effects = Vec::new();
+        //     mem::swap(&mut effects, &mut self.current_effects);
+        //     for effect in &mut effects {
+        //         effect.effect(self, delta_time);
+        //     }
+        //     effects.retain(|effect| effect.time_remaining > 0.0);
+        //     mem::swap(&mut effects, &mut self.current_effects);
+        // }
 
         let mut force_x = 0.0;
         let mut force_y = 0.0;
@@ -199,18 +256,14 @@ impl PlayerState {
 
     fn jump(&mut self) {
         if self.grounded {
-            self.velocity_y += self.settings.jump_force; // Instant boost.
-            self.current_effects.push(Effect {
-                time_remaining: self.settings.jump_duration / self.settings.tick_constant,
-                effect: EffectType::Jumping,
-            });
+            self.velocity_y += self.settings.jump_boost;
         } else if self.on_left_wall {
-            self.velocity_x += self.settings.wall_force_x;
-            self.velocity_y += self.settings.wall_force_y;
+            self.velocity_x += self.settings.wall_boost_x;
+            self.velocity_y += self.settings.wall_boost_y;
             self.last_movement = MovementState::MovingRight;
         } else if self.on_right_wall {
-            self.velocity_x -= self.settings.wall_force_x;
-            self.velocity_y += self.settings.wall_force_y;
+            self.velocity_x -= self.settings.wall_boost_x;
+            self.velocity_y += self.settings.wall_boost_y;
             self.last_movement = MovementState::MovingLeft;
         }
     }
@@ -238,7 +291,7 @@ impl PlayerState {
 pub const PLAYER_COLLISION_WIDTH: u32 = 10;
 pub const PLAYER_COLLISION_HEIGHT: u32 = 20;
 
-impl collisions::HasBounds for PlayerState {
+impl<'a> collisions::HasBounds for PlayerState<'a> {
     fn min_x(&self) -> f64 {
         self.absolute_x
     }

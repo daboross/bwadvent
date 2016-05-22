@@ -7,12 +7,16 @@ extern crate time;
 #[macro_use]
 extern crate nom;
 extern crate collisions;
+extern crate gtk;
 
 mod level_serialization;
 mod map;
 mod player;
 mod scenes;
 mod mechanics;
+mod settings;
+
+use std::sync::mpsc;
 
 use graphics::ImageSize;
 use opengl_graphics::glyph_cache::GlyphCache;
@@ -25,6 +29,7 @@ use player::{PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH};
 
 pub type Window = piston_window::PistonWindow;
 pub type Graphics = opengl_graphics::GlGraphics;
+pub type SettingsChannel = std::sync::mpsc::Receiver<mechanics::SettingsUpdate>;
 
 pub fn run() {
     let opengl_version = opengl_graphics::OpenGL::V3_0;
@@ -38,7 +43,11 @@ pub fn run() {
     let mut graphics = opengl_graphics::GlGraphics::new(opengl_version);
     let mut cache = GraphicsCache::load();
 
-    scenes::MAIN_MENU.run(&window, &mut graphics, &mut cache)
+    let (settings_send, mut settings_recv) = mpsc::channel();
+
+    settings::exec_threaded(settings_send);
+
+    scenes::MAIN_MENU.run(&window, &mut graphics, &mut cache, &mut settings_recv)
 }
 
 pub struct PlayerGraphics {
@@ -96,7 +105,7 @@ impl GraphicsCache {
     pub fn load() -> GraphicsCache {
         GraphicsCache {
             player: PlayerGraphics::load(),
-            font: GlyphCache::from_bytes(include_bytes!("../ttf/SigmarOne.ttf"))
+            font: GlyphCache::from_bytes(include_bytes!("../ttf/Akashi.ttf"))
                       .unwrap(),
         }
     }

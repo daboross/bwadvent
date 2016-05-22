@@ -6,7 +6,7 @@ use piston::input::{Button, Key, MouseButton, PressEvent, RenderEvent, ReleaseEv
     MouseCursorEvent};
 use graphics::{Transformed, self};
 
-use ::{Graphics, GraphicsCache, Window};
+use super::super::{Graphics, GraphicsCache, Window, SettingsChannel};
 use super::play::PlayData;
 use level_serialization::{Level, load_level};
 use map::Platform;
@@ -28,8 +28,9 @@ impl EditorScene {
         }
     }
 
-    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
-        let mut session = EditorData::new(&self.map, graphics, cache);
+    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+            sc: &mut SettingsChannel) {
+        let mut session = EditorData::new(&self.map, graphics, cache, sc);
 
         for event in window.clone() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
@@ -50,10 +51,11 @@ struct EditorData<'a> {
 }
 
 impl<'a> EditorData<'a> {
-    pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache)
+    pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache,
+                    sc: &'b mut SettingsChannel)
                    -> EditorData<'b> {
         EditorData {
-            play_data: PlayData::new(level, graphics, cache),
+            play_data: PlayData::new(level, graphics, cache, sc),
             current_mouse_x: 0f64,
             current_mouse_y: 0f64,
             screen_width: 0f64,

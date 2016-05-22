@@ -9,6 +9,7 @@ path = "src/rust/lib.rs"
 
 [dependencies]
 nom = "1.2"
+gtk = "0.0.7"
 time = "0.1"
 piston = "0.19"
 piston_window = "0.42"

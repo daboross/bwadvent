@@ -12,9 +12,9 @@ use graphics::{self, Context, Transformed};
 use graphics::types::Color;
 use graphics::character::CharacterCache;
 
-use super::{Graphics, GraphicsCache, Window};
+use super::{Graphics, GraphicsCache, Window, SettingsChannel};
 
-pub type SceneRunFn<'a> = for<'b, 'c, 'd> Fn(&'b Window, &'c mut Graphics, &'d mut GraphicsCache) + Sync + 'a;
+pub type SceneRunFn<'a> = for<'b, 'c, 'd, 'e> Fn(&'b Window, &'c mut Graphics, &'d mut GraphicsCache, &'e mut SettingsChannel) + Sync + 'a;
 
 pub static MAIN_MENU: MenuScene<'static> = MenuScene {
     title: "B/W ADVENTURES",
@@ -50,7 +50,8 @@ fn find_level_dir() -> PathBuf {
     }
 }
 
-fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+        sc: &mut SettingsChannel) {
     let level_dir = find_level_dir();
 
     let play_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
@@ -58,17 +59,19 @@ fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCach
         // unwrap here because DirEntry guarantees that there will be a file name.
         let name = path.file_stem().unwrap().to_string_lossy().into_owned();
 
-        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache| {
-            play::PlayScene::new(&path).run(window, graphics, cache);
-        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache) + Sync>)
+        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+                sc: &mut SettingsChannel| {
+            play::PlayScene::new(&path).run(window, graphics, cache, sc);
+        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
     }).collect::<Vec<_>>();
 
     let menu = MenuScene { title: "CHOOSE LEVEL", options: &play_options[..] };
 
-    menu.run(window, graphics, cache);
+    menu.run(window, graphics, cache, sc);
 }
 
-fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+        sc: &mut SettingsChannel) {
     let level_dir = find_level_dir();
 
     let editor_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
@@ -76,14 +79,15 @@ fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCa
         // unwrap here because DirEntry guarantees that there will be a file name.
         let name = path.file_stem().unwrap().to_string_lossy().into_owned();
 
-        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache| {
-            editor::EditorScene::new(&path).run(window, graphics, cache);
-        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache) + Sync>)
+        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+                sc: &mut SettingsChannel| {
+            editor::EditorScene::new(&path).run(window, graphics, cache, sc);
+        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
     }).collect::<Vec<_>>();
 
     let menu = MenuScene { title: "CHOOSE LEVEL", options: &editor_options[..] };
 
-    menu.run(window, graphics, cache);
+    menu.run(window, graphics, cache, sc);
 }
 
 
@@ -129,7 +133,8 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
         where TiT: AsRef<str> + 'a,
                 OpT: AsRef<str> + 'a,
                 FnT: Deref<Target=SceneRunFn<'a>> + 'a {
-    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+            sc: &mut SettingsChannel) {
         let mut selected = 0usize;
 
         for event in window.clone() {
@@ -203,7 +208,7 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                     }
                     Button::Keyboard(Key::Return) => {
                         println!("Selected: {}", selected);
-                        (self.options[selected].1)(window, graphics, cache);
+                        (self.options[selected].1)(window, graphics, cache, sc);
                     }
                     _ => (),
                 }

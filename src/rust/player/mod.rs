@@ -5,6 +5,7 @@ use opengl_graphics::Texture as OpenGlTexture;
 
 use super::Window;
 use super::PlayerGraphics;
+use super::SettingsChannel;
 use map::Map;
 use mechanics::PlayerState;
 use mechanics::MovementState;
@@ -15,16 +16,16 @@ pub const PLAYER_IMAGE_Y_OFFSET: f64 = 0.0;
 pub const PLAYER_IMAGE_X_OFFSET: f64 = -11.0;
 
 #[derive(Default)]
-pub struct Player {
+pub struct Player<'a> {
     pub last_scroll_x: f64,
     pub last_scroll_y: f64,
-    pub state: PlayerState,
+    pub state: PlayerState<'a>,
 }
 
-impl Player {
-    pub fn new(x: f64, y: f64) -> Player {
+impl<'a> Player<'a> {
+    pub fn new<'b>(x: f64, y: f64, sc: &'b mut SettingsChannel) -> Player<'b> {
         Player {
-            state: PlayerState::new(x, y),
+            state: PlayerState::new(x, y, sc),
             last_scroll_x: x,
             last_scroll_y: y,
         }
@@ -34,7 +35,7 @@ impl Player {
         self.state.update(event, map);
     }
 
-    pub fn get_current_image<'a>(&self, cache: &'a PlayerGraphics) -> &'a OpenGlTexture {
+    pub fn get_current_image<'b>(&self, cache: &'b PlayerGraphics) -> &'b OpenGlTexture {
         if self.state.grounded {
             match self.state.last_movement {
                 MovementState::StillLeft => {
