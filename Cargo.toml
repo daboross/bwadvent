@@ -10,9 +10,10 @@ path = "src/rust/lib.rs"
 [dependencies]
 nom = "1.2"
 time = "0.1"
-piston = "0.19"
-piston_window = "0.42"
+piston = "0.22"
+piston_window = "0.47"
+pistoncore-sdl2_window = "0.30"
 piston2d-graphics = "0.16"
-piston2d-opengl_graphics = "0.26"
+piston2d-opengl_graphics = "0.29"
 collisions = { git = "https://github.com/daboross/rust-temp-collisions.git" }
-image = { version = "0.9", default-features = false, features = ["png"] }
+image = { version = "0.10", default-features = false, features = ["png"] }

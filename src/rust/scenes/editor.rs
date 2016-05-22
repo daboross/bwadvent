@@ -2,7 +2,7 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{Button, Key, MouseButton, PressEvent, RenderEvent, ReleaseEvent,
+use piston::input::{Button, Key, Event, MouseButton, PressEvent, RenderEvent, ReleaseEvent,
     MouseCursorEvent};
 use graphics::{Transformed, self};
 
@@ -28,10 +28,10 @@ impl EditorScene {
         }
     }
 
-    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
+    pub fn run(&self, window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache) {
         let mut session = EditorData::new(&self.map, graphics, cache);
 
-        for event in window.clone() {
+        while let Some(event) = window.next() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
                 break;
             }
@@ -62,7 +62,7 @@ impl<'a> EditorData<'a> {
         }
     }
 
-    pub fn process(&mut self, event: &Window) {
+    pub fn process(&mut self, event: &Event) {
         self.play_data.process(event);
         event.render(|args| {
             self.screen_width = args.width as f64;
