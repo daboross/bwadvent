@@ -35,10 +35,11 @@ pub fn run() {
     let opengl_version = opengl_graphics::OpenGL::V3_0;
 
     let window = WindowSettings::new("b-w-adventures", [640u32, 480u32])
-                        .exit_on_esc(false)
-                        .srgb(false)
-                        .opengl(opengl_version)
-                        .build().unwrap();
+        .exit_on_esc(false)
+        .srgb(false)
+        .opengl(opengl_version)
+        .build()
+        .unwrap();
 
     let mut graphics = opengl_graphics::GlGraphics::new(opengl_version);
     let mut cache = GraphicsCache::load();
@@ -105,8 +106,7 @@ impl GraphicsCache {
     pub fn load() -> GraphicsCache {
         GraphicsCache {
             player: PlayerGraphics::load(),
-            font: GlyphCache::from_bytes(include_bytes!("../ttf/Akashi.ttf"))
-                      .unwrap(),
+            font: GlyphCache::from_bytes(include_bytes!("../ttf/Akashi.ttf")).unwrap(),
         }
     }
 }
@@ -116,8 +116,8 @@ impl GraphicsCache {
 //     let image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
 fn load_texture(bytes: &[u8]) -> OpenGlTexture {
     let image = image::load_from_memory_with_format(bytes.as_ref(), image::ImageFormat::PNG)
-                    .unwrap()
-                    .to_rgba();
+        .unwrap()
+        .to_rgba();
 
     opengl_graphics::Texture::from_image(&image, &TextureSettings::new())
 }
@@ -127,8 +127,8 @@ fn load_texture(bytes: &[u8]) -> OpenGlTexture {
 //     let mut image = image::load(file, image::ImageFormat::PNG).unwrap().to_rgba();
 fn load_texture_frames(bytes: &[u8], num_frames: u32) -> Vec<OpenGlTexture> {
     let mut image = image::load_from_memory_with_format(bytes.as_ref(), image::ImageFormat::PNG)
-                        .unwrap()
-                        .to_rgba();
+        .unwrap()
+        .to_rgba();
     let (image_width, height) = image.dimensions();
 
     assert_eq!(image_width % num_frames, 0);

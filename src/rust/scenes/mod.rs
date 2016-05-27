@@ -12,16 +12,16 @@ use graphics::{self, Context, Transformed};
 use graphics::types::Color;
 use graphics::character::CharacterCache;
 
-use super::{Graphics, GraphicsCache, Window, SettingsChannel};
+use super::{Graphics, GraphicsCache, SettingsChannel, Window};
 
-pub type SceneRunFn<'a> = for<'b, 'c, 'd, 'e> Fn(&'b Window, &'c mut Graphics, &'d mut GraphicsCache, &'e mut SettingsChannel) + Sync + 'a;
+pub type SceneRunFn<'a> = for<'b, 'c, 'd, 'e> Fn(&'b Window,
+                                                 &'c mut Graphics,
+                                                 &'d mut GraphicsCache,
+                                                 &'e mut SettingsChannel) + Sync + 'a;
 
 pub static MAIN_MENU: MenuScene<'static> = MenuScene {
     title: "B/W ADVENTURES",
-    options: &[
-        ("PLAY", &play_scene as &SceneRunFn),
-        ("EDIT", &editor_scene as &SceneRunFn),
-    ],
+    options: &[("PLAY", &play_scene as &SceneRunFn), ("EDIT", &editor_scene as &SceneRunFn)],
 };
 
 fn find_level_dir() -> PathBuf {
@@ -51,7 +51,7 @@ fn find_level_dir() -> PathBuf {
 }
 
 fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
-        sc: &mut SettingsChannel) {
+              sc: &mut SettingsChannel) {
     let level_dir = find_level_dir();
 
     let play_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
@@ -65,13 +65,16 @@ fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCach
         }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
     }).collect::<Vec<_>>();
 
-    let menu = MenuScene { title: "CHOOSE LEVEL", options: &play_options[..] };
+    let menu = MenuScene {
+        title: "CHOOSE LEVEL",
+        options: &play_options[..],
+    };
 
     menu.run(window, graphics, cache, sc);
 }
 
 fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
-        sc: &mut SettingsChannel) {
+                sc: &mut SettingsChannel) {
     let level_dir = find_level_dir();
 
     let editor_options = fs::read_dir(&level_dir).unwrap().filter_map(Result::ok).map(|i| i.path())
@@ -85,7 +88,10 @@ fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCa
         }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
     }).collect::<Vec<_>>();
 
-    let menu = MenuScene { title: "CHOOSE LEVEL", options: &editor_options[..] };
+    let menu = MenuScene {
+        title: "CHOOSE LEVEL",
+        options: &editor_options[..],
+    };
 
     menu.run(window, graphics, cache, sc);
 }
@@ -122,19 +128,21 @@ fn draw_text<T: AsRef<str>>(position: [f64; 4], text: T, text_size: u32, color: 
 }
 
 pub struct MenuScene<'a, TiT = &'a str, OpT = &'a str, FnT = &'a SceneRunFn<'a>>
-        where TiT: AsRef<str> + 'a,
-                OpT: AsRef<str> + 'a,
-                FnT: Deref<Target=SceneRunFn<'a>> + 'a {
+    where TiT: AsRef<str> + 'a,
+          OpT: AsRef<str> + 'a,
+          FnT: Deref<Target = SceneRunFn<'a>> + 'a
+{
     title: TiT,
     options: &'a [(OpT, FnT)],
 }
 
 impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
-        where TiT: AsRef<str> + 'a,
-                OpT: AsRef<str> + 'a,
-                FnT: Deref<Target=SceneRunFn<'a>> + 'a {
+    where TiT: AsRef<str> + 'a,
+          OpT: AsRef<str> + 'a,
+          FnT: Deref<Target = SceneRunFn<'a>> + 'a
+{
     pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
-            sc: &mut SettingsChannel) {
+               sc: &mut SettingsChannel) {
         let mut selected = 0usize;
 
         for event in window.clone() {
@@ -154,9 +162,11 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
 
                 graphics.draw(viewport, |context, graphics| {
                     graphics::clear(graphics::color::BLACK, graphics);
-                    let width = f64::min(screen_width * 0.8,  400.0).floor();
-                    let height = f64::min(screen_height * 0.8 / ((self.options.len() + 2) as f64 *
-                            1.2), 20.0).floor();
+                    let width = f64::min(screen_width * 0.8, 400.0).floor();
+                    let height = f64::min(screen_height * 0.8 /
+                                          ((self.options.len() + 2) as f64 * 1.2),
+                                          20.0)
+                        .floor();
                     let x_pos = ((screen_width - width) / 2.0).floor();
 
                     draw_text(
@@ -168,8 +178,8 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
                     );
 
                     for (index, &(ref text, _)) in self.options.iter().enumerate() {
-                        let y_pos = (screen_height * 0.2 + (index + 2) as f64 * height * 1.2
-                                ).floor();
+                        let y_pos = (screen_height * 0.2 + (index + 2) as f64 * height * 1.2)
+                            .floor();
                         let color = if index == selected {
                             graphics::color::WHITE
                         } else {
@@ -196,7 +206,8 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
             event.press(|b| {
                 match b {
                     Button::Keyboard(Key::Up) => {
-                        if selected == 0 { // selected is usize
+                        if selected == 0 {
+                            // selected is usize
                             selected = self.options.len() - 1;
                         } else {
                             selected -= 1;

@@ -2,11 +2,7 @@ use std::thread;
 use std::sync::mpsc;
 
 use gtk::prelude::*;
-use gtk::{
-    Orientation, PositionType,
-    Window, WindowType,
-    self
-};
+use gtk::{self, Orientation, PositionType, Window, WindowType};
 
 use mechanics::SettingsUpdate;
 use mechanics::PlayerSettings;
@@ -69,5 +65,5 @@ fn run(channel: mpsc::Sender<SettingsUpdate>) {
 }
 
 pub fn exec_threaded(channel: mpsc::Sender<SettingsUpdate>) {
-    thread::spawn(||run(channel));
+    thread::spawn(|| run(channel));
 }

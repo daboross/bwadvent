@@ -2,11 +2,11 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{Button, Key, MouseButton, PressEvent, RenderEvent, ReleaseEvent,
-    MouseCursorEvent};
-use graphics::{Transformed, self};
+use piston::input::{Button, Key, MouseButton, MouseCursorEvent, PressEvent, ReleaseEvent,
+                    RenderEvent};
+use graphics::{self, Transformed};
 
-use super::super::{Graphics, GraphicsCache, Window, SettingsChannel};
+use super::super::{Graphics, GraphicsCache, SettingsChannel, Window};
 use super::play::PlayData;
 use level_serialization::{Level, load_level};
 use map::Platform;
@@ -23,13 +23,13 @@ impl EditorScene {
             file.read_to_end(&mut buf).unwrap();
         }
         EditorScene {
-            map: load_level(&buf).expect(&format!("Failed to load level: {}",
-                level_file.as_ref().display())),
+            map: load_level(&buf)
+                .expect(&format!("Failed to load level: {}", level_file.as_ref().display())),
         }
     }
 
     pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
-            sc: &mut SettingsChannel) {
+               sc: &mut SettingsChannel) {
         let mut session = EditorData::new(&self.map, graphics, cache, sc);
 
         for event in window.clone() {
@@ -52,7 +52,7 @@ struct EditorData<'a> {
 
 impl<'a> EditorData<'a> {
     pub fn new<'b>(level: &Level, graphics: &'b mut Graphics, cache: &'b mut GraphicsCache,
-                    sc: &'b mut SettingsChannel)
+                   sc: &'b mut SettingsChannel)
                    -> EditorData<'b> {
         EditorData {
             play_data: PlayData::new(level, graphics, cache, sc),
@@ -76,7 +76,8 @@ impl<'a> EditorData<'a> {
                     window_size: [1; 2],
                 };
 
-                let (scroll_x, scroll_y) = (self.play_data.player.last_scroll_x, self.play_data.player.last_scroll_y);
+                let (scroll_x, scroll_y) = (self.play_data.player.last_scroll_x,
+                                            self.play_data.player.last_scroll_y);
 
                 let screen_width = args.width as f64;
                 let screen_height = args.height as f64;
@@ -109,7 +110,8 @@ impl<'a> EditorData<'a> {
                 let scroll_y = player.last_scroll_y;
                 self.scroll_start = Some((
                     self.current_mouse_x + scroll_x - self.screen_width / 2.0,
-                    self.current_mouse_y + scroll_y - self.screen_height / 2.0));
+                    self.current_mouse_y + scroll_y - self.screen_height / 2.0,
+                ));
             }
         });
         event.release(|button| {
@@ -127,9 +129,7 @@ impl<'a> EditorData<'a> {
                     let len_x = max_x - min_x;
                     let len_y = max_y - min_y;
 
-                    self.play_data.map.add_block(Platform::new_box(
-                        min_x, min_y, len_x, len_y
-                    ));
+                    self.play_data.map.add_block(Platform::new_box(min_x, min_y, len_x, len_y));
 
                     println!("platform.box: {:.1},{:.1},{:.1},{:.1}", min_x, min_y, len_x, len_y);
                 }

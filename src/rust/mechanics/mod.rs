@@ -53,10 +53,7 @@ impl<'a> Default for PlayerSettings<'a> {
 
 impl<'a> PlayerSettings<'a> {
     fn new<'b>(sc: &'b mut ::SettingsChannel) -> PlayerSettings<'b> {
-        PlayerSettings {
-            update_channel: Some(sc),
-            ..PlayerSettings::default()
-        }
+        PlayerSettings { update_channel: Some(sc), ..PlayerSettings::default() }
     }
 
     fn get_updates(&mut self) {
@@ -75,10 +72,10 @@ impl<'a> PlayerSettings<'a> {
                             SettingsUpdate::TickConstant(v) => self.tick_constant = v,
                             SettingsUpdate::JumpDuration(v) => self.jump_duration = v,
                         }
-                    },
+                    }
                     Err(mpsc::TryRecvError::Empty) => {
                         return;
-                    },
+                    }
                     Err(mpsc::TryRecvError::Disconnected) => {
                         break;
                     }

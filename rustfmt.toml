@@ -3,3 +3,7 @@ fn_args_density = "Compressed"
 fn_brace_style = "PreferSameLine"
 max_width = 100
 ideal_width = 100
+#where_density = "Tall"
+where_indent = "Visual"
+where_pred_indent = "Visual"
+wrap_match_arms = false
