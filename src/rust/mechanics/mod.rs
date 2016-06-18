@@ -6,7 +6,6 @@ use collisions::HasBounds;
 use collisions;
 
 use map::Map;
-use super::Window;
 
 #[derive(Copy, Clone, Debug)]
 pub enum SettingsUpdate {
@@ -265,7 +264,7 @@ impl<'a> PlayerState<'a> {
         }
     }
 
-    pub fn update(&mut self, event: &Window, map: &Map) {
+    pub fn update(&mut self, event: &Event, map: &Map) {
         event.press(|button| {
             match button {
                 Button::Keyboard(Key::Up) => self.jump(),

@@ -7,6 +7,7 @@ extern crate time;
 #[macro_use]
 extern crate nom;
 extern crate collisions;
+extern crate sdl2_window;
 extern crate gtk;
 
 mod level_serialization;
@@ -24,22 +25,31 @@ use opengl_graphics::glyph_cache::GlyphCache;
 use opengl_graphics::Texture as OpenGlTexture;
 use opengl_graphics::TextureSettings;
 use piston::window::WindowSettings;
+use piston_window::PistonWindow;
 
 use player::{PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH};
 
-pub type Window = piston_window::PistonWindow;
+pub type Window = piston_window::PistonWindow<sdl2_window::Sdl2Window>;
 pub type Graphics = opengl_graphics::GlGraphics;
 pub type SettingsChannel = std::sync::mpsc::Receiver<mechanics::SettingsUpdate>;
 
 pub fn run() {
     let opengl_version = opengl_graphics::OpenGL::V3_0;
 
-    let window = WindowSettings::new("b-w-adventures", [640u32, 480u32])
-        .exit_on_esc(false)
-        .srgb(false)
-        .opengl(opengl_version)
-        .build()
-        .unwrap();
+    let mut window = {
+        let settings = WindowSettings::new("b-w-adventures", [640u32, 480u32])
+                            .exit_on_esc(false)
+                            .srgb(true)
+                            .opengl(opengl_version);
+
+        let samples = settings.get_samples();
+
+        let window = settings.build().unwrap();
+
+        println!("Successfully created first window");
+
+        PistonWindow::new(opengl_version, samples, window)
+    };
 
     let mut graphics = opengl_graphics::GlGraphics::new(opengl_version);
     let mut cache = GraphicsCache::load();
@@ -48,7 +58,7 @@ pub fn run() {
 
     settings::exec_threaded(settings_send);
 
-    scenes::MAIN_MENU.run(&window, &mut graphics, &mut cache, &mut settings_recv)
+    scenes::MAIN_MENU.run(&mut window, &mut graphics, &mut cache, &mut settings_recv)
 }
 
 pub struct PlayerGraphics {

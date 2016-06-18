@@ -2,11 +2,11 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{Button, Key, MouseButton, MouseCursorEvent, PressEvent, ReleaseEvent,
+use piston::input::{Button, Key, Event, MouseButton, MouseCursorEvent, PressEvent, ReleaseEvent,
                     RenderEvent};
 use graphics::{self, Transformed};
 
-use super::super::{Graphics, GraphicsCache, SettingsChannel, Window};
+use ::{Graphics, GraphicsCache, SettingsChannel, Window};
 use super::play::PlayData;
 use level_serialization::{Level, load_level};
 use map::Platform;
@@ -28,11 +28,11 @@ impl EditorScene {
         }
     }
 
-    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+    pub fn run(&self, window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
                sc: &mut SettingsChannel) {
         let mut session = EditorData::new(&self.map, graphics, cache, sc);
 
-        for event in window.clone() {
+        while let Some(event) = window.next() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
                 break;
             }
@@ -64,7 +64,7 @@ impl<'a> EditorData<'a> {
         }
     }
 
-    pub fn process(&mut self, event: &Window) {
+    pub fn process(&mut self, event: &Event) {
         self.play_data.process(event);
         event.render(|args| {
             self.screen_width = args.width as f64;

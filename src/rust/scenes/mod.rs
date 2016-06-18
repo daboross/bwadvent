@@ -14,7 +14,7 @@ use graphics::character::CharacterCache;
 
 use super::{Graphics, GraphicsCache, SettingsChannel, Window};
 
-pub type SceneRunFn<'a> = for<'b, 'c, 'd, 'e> Fn(&'b Window,
+pub type SceneRunFn<'a> = for<'b, 'c, 'd, 'e> Fn(&'b mut Window,
                                                  &'c mut Graphics,
                                                  &'d mut GraphicsCache,
                                                  &'e mut SettingsChannel) + Sync + 'a;
@@ -50,7 +50,7 @@ fn find_level_dir() -> PathBuf {
     }
 }
 
-fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+fn play_scene(window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
               sc: &mut SettingsChannel) {
     let level_dir = find_level_dir();
 
@@ -59,10 +59,10 @@ fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCach
         // unwrap here because DirEntry guarantees that there will be a file name.
         let name = path.file_stem().unwrap().to_string_lossy().into_owned();
 
-        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+        (name, Box::new(move |window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
                 sc: &mut SettingsChannel| {
             play::PlayScene::new(&path).run(window, graphics, cache, sc);
-        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
+        }) as Box<Fn(&mut Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
     }).collect::<Vec<_>>();
 
     let menu = MenuScene {
@@ -73,7 +73,7 @@ fn play_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCach
     menu.run(window, graphics, cache, sc);
 }
 
-fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+fn editor_scene(window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
                 sc: &mut SettingsChannel) {
     let level_dir = find_level_dir();
 
@@ -82,10 +82,10 @@ fn editor_scene(window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCa
         // unwrap here because DirEntry guarantees that there will be a file name.
         let name = path.file_stem().unwrap().to_string_lossy().into_owned();
 
-        (name, Box::new(move |window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+        (name, Box::new(move |window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
                 sc: &mut SettingsChannel| {
             editor::EditorScene::new(&path).run(window, graphics, cache, sc);
-        }) as Box<Fn(&Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
+        }) as Box<Fn(&mut Window, &mut Graphics, &mut GraphicsCache, &mut SettingsChannel) + Sync>)
     }).collect::<Vec<_>>();
 
     let menu = MenuScene {
@@ -141,11 +141,11 @@ impl<'a, TiT, OpT, FnT> MenuScene<'a, TiT, OpT, FnT>
           OpT: AsRef<str> + 'a,
           FnT: Deref<Target = SceneRunFn<'a>> + 'a
 {
-    pub fn run(&self, window: &Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
+    pub fn run(&self, window: &mut Window, graphics: &mut Graphics, cache: &mut GraphicsCache,
                sc: &mut SettingsChannel) {
         let mut selected = 0usize;
 
-        for event in window.clone() {
+        while let Some(event) = window.next() {
             if let Some(Button::Keyboard(Key::Escape)) = event.press_args() {
                 break;
             }

@@ -3,7 +3,6 @@ use std::f64;
 use piston::input::*;
 use opengl_graphics::Texture as OpenGlTexture;
 
-use super::Window;
 use super::PlayerGraphics;
 use super::SettingsChannel;
 use map::Map;
@@ -31,7 +30,7 @@ impl<'a> Player<'a> {
         }
     }
 
-    pub fn event(&mut self, event: &Window, map: &Map) {
+    pub fn event(&mut self, event: &Event, map: &Map) {
         self.state.update(event, map);
     }
 
