@@ -5,3 +5,7 @@ rust:
 - beta
 - nightly
 script: 'cargo test'
+addons:
+  apt:
+    packages:
+    - libgtk-3-dev
