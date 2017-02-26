@@ -30,7 +30,7 @@ impl<'a> Player<'a> {
         }
     }
 
-    pub fn event(&mut self, event: &Event, map: &Map) {
+    pub fn event(&mut self, event: &Input, map: &Map) {
         self.state.update(event, map);
     }
 

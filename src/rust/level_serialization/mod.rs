@@ -54,9 +54,9 @@ named! {
     map_res! (
         chain! (
             tag!("start")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             tag!(":")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             x: take_until_and_consume!(",")~
             y: take_until_and_consume!("\n"),
             || { (x, y) }
@@ -73,9 +73,9 @@ named! {
     map_res! (
         chain! (
             tag!("bounds")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             tag!(":")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             west: take_until_and_consume!(",")~
             south: take_until_and_consume!(",")~
             east: take_until_and_consume!(",")~
@@ -108,9 +108,9 @@ named! {
     map_res! (
         chain! (
             tag!("platform.line")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             tag!(":")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             x: take_until_and_consume!(",")~
             y: take_until_and_consume!(",")~
             d: call!(direction)~ tag!(",")~
@@ -134,9 +134,9 @@ named! {
     map_res! (
         chain! (
             tag!("platform.box")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             tag!(":")~
-            opt!(call!(nom::space))~
+            opt!(complete!(call!(nom::space)))~
             x: take_until_and_consume!(",")~
             y: take_until_and_consume!(",")~
             w: take_until_and_consume!(",")~
@@ -162,8 +162,8 @@ named! {
 named! {
     level_end<()>,
     chain! (
-        opt!(call!(nom::space))~
-        call!(nom::eof),
+        opt!(complete!(call!(nom::multispace)))~
+        eof!(),
         || ()
     )
 }
@@ -172,9 +172,9 @@ named! {
     level<Level>,
     chain! (
         initial_coords: call!(level_initial_coords)~
-        opt!(call!(nom::multispace))~
+        opt!(complete!(call!(nom::multispace)))~
         bounds: call!(level_bounds)~
-        opt!(call!(nom::multispace))~
+        opt!(complete!(call!(nom::multispace)))~
         items: terminated!(many0!(call!(level_item)), call!(level_end)),
         || {
             Level {
@@ -201,11 +201,8 @@ fn parse_f64(i: &[u8]) -> Result<f64, ()> {
 }
 
 
-pub fn load_level<T: ?Sized>(input: &T) -> Option<Level> where T: AsRef<[u8]> {
-    match level(input.as_ref()) {
-        nom::IResult::Done(_, level) => Some(level),
-        nom::IResult::Error(..) | nom::IResult::Incomplete(..) => None,
-    }
+pub fn load_level<T: ?Sized>(input: &T) -> Result<Level, nom::IError> where T: AsRef<[u8]> {
+    level(input.as_ref()).to_full_result()
 }
 
 #[allow(dead_code)]

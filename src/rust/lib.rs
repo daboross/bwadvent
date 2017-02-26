@@ -7,7 +7,6 @@ extern crate time;
 #[macro_use]
 extern crate nom;
 extern crate collisions;
-extern crate sdl2_window;
 extern crate gtk;
 
 mod level_serialization;
@@ -29,17 +28,17 @@ use piston_window::PistonWindow;
 
 use player::{PLAYER_IMAGE_HEIGHT, PLAYER_IMAGE_WIDTH};
 
-pub type Window = piston_window::PistonWindow<sdl2_window::Sdl2Window>;
+pub type Window = piston_window::PistonWindow;
 pub type Graphics = opengl_graphics::GlGraphics;
 pub type SettingsChannel = std::sync::mpsc::Receiver<mechanics::SettingsUpdate>;
 
 pub fn run() {
-    let opengl_version = opengl_graphics::OpenGL::V3_0;
+    let opengl_version = opengl_graphics::OpenGL::V3_2;
 
     let mut window = {
         let settings = WindowSettings::new("b-w-adventures", [640u32, 480u32])
                             .exit_on_esc(false)
-                            .srgb(true)
+                            .srgb(false)
                             .opengl(opengl_version);
 
         let samples = settings.get_samples();

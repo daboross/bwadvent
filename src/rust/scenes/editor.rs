@@ -2,8 +2,8 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{Button, Key, Event, MouseButton, MouseCursorEvent, PressEvent, ReleaseEvent,
-                    RenderEvent};
+use piston::input::{Button, Key, MouseButton, MouseCursorEvent, PressEvent, ReleaseEvent,
+                    RenderEvent, Input};
 use graphics::{self, Transformed};
 
 use ::{Graphics, GraphicsCache, SettingsChannel, Window};
@@ -64,7 +64,7 @@ impl<'a> EditorData<'a> {
         }
     }
 
-    pub fn process(&mut self, event: &Event) {
+    pub fn process(&mut self, event: &Input) {
         self.play_data.process(event);
         event.render(|args| {
             self.screen_width = args.width as f64;

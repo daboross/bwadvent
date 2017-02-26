@@ -2,8 +2,8 @@ use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 
-use piston::input::{Button, Key, Event, PressEvent, RenderArgs, RenderEvent};
-use graphics::{self, ImageSize, Transformed};
+use piston::input::{Button, Key, PressEvent, RenderArgs, RenderEvent, Input};
+use graphics::{self, Transformed};
 
 use super::super::{Graphics, GraphicsCache, SettingsChannel, Window};
 use level_serialization::{Level, load_level};
@@ -105,7 +105,7 @@ impl<'a> PlayData<'a> {
         })
     }
 
-    pub fn process(&mut self, event: &Event) {
+    pub fn process(&mut self, event: &Input) {
         event.render(|event| self.render(event));
         self.player.event(&event, &self.map);
     }

@@ -264,7 +264,7 @@ impl<'a> PlayerState<'a> {
         }
     }
 
-    pub fn update(&mut self, event: &Event, map: &Map) {
+    pub fn update(&mut self, event: &Input, map: &Map) {
         event.press(|button| {
             match button {
                 Button::Keyboard(Key::Up) => self.jump(),
