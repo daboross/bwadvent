@@ -1,0 +1,5 @@
+[package]
+name = "collisions"
+version = "0.1.0"
+authors = ["Dabo Ross <daboross@daboross.net>"]
+workspace = "../"
